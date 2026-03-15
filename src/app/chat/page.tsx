@@ -166,7 +166,7 @@ export default function ChatPage() {
                     <AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" />
                     <div>
                       <span className="text-xs text-red-400 font-medium">
-                        Attack detected: {msg.safetyCheck.attackType?.replace(/_/g, " ")}
+                        Attack detected: {msg.safetyCheck.attackType?.split("_").join(" ")}
                       </span>
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className="text-[10px] text-gray-500 flex items-center gap-0.5">
@@ -267,7 +267,7 @@ export default function ChatPage() {
                   <div className="flex items-center gap-1.5 mb-1">
                     <AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" />
                     <span className="text-xs text-red-400 font-medium capitalize">
-                      {alert.type?.replace(/_/g, " ")}
+                      {alert.type?.split("_").join(" ")}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
