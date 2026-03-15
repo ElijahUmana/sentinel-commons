@@ -168,7 +168,7 @@ export default function ChatPage() {
                     </div>
                   </div>
                 )}
-                <div className="text-[10px] text-gray-500 mt-1">
+                <div className="text-[10px] text-gray-500 mt-1" suppressHydrationWarning>
                   {new Date(msg.timestamp).toLocaleTimeString()}
                 </div>
               </div>
