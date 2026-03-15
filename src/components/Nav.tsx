@@ -31,7 +31,7 @@ export function Nav() {
               <>
                 <NavLink href="/" label="Home" active={pathname === "/"} />
                 <NavLink href="/chat" label="Chat" active={pathname === "/chat"} />
-                <NavLink href="/governance" label="Governance" active={pathname === "/governance"} />
+                <NavLink href="/governance" label="Agent Governance" active={pathname === "/governance"} />
                 {/* Audit Trail only for floor leads */}
                 {role === "lead" && (
                   <NavLink href="/audit" label="Audit Trail" active={pathname === "/audit"} />

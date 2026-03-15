@@ -514,31 +514,50 @@ export default function Home() {
               </div>
               <div>
                 <div className="font-semibold">Governance</div>
-                <div className="text-xs text-gray-400">{activeProposals.length} proposal{activeProposals.length !== 1 ? "s" : ""} need your vote</div>
+                <div className="text-xs text-gray-400">{activeProposals.length} active instruction{activeProposals.length !== 1 ? "s" : ""}</div>
               </div>
             </div>
-            <div className="text-[10px] text-gray-500">{isVerified ? "You're verified — you can vote and propose." : "Verify at frontier.human.tech to participate."}</div>
+            <div className="text-[10px] text-gray-500">See how the agent is governed. View rules, instructions, and the Covenant.</div>
           </a>
         </div>
       )}
 
       {/* Lead: management quick actions */}
       {role === "lead" && (
-        <div className="grid grid-cols-3 gap-3 mb-5">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
           <a href="/governance" className="glass rounded-xl p-4 hover:border-cyan-400/30 transition-colors text-center">
             <Vote className="w-5 h-5 text-cyan-400 mx-auto mb-1" />
-            <div className="text-xs font-medium">Proposals & Rules</div>
-            <div className="text-[10px] text-gray-500">{activeProposals.length} active</div>
+            <div className="text-xs font-medium">Agent Governance</div>
+            <div className="text-[10px] text-gray-500">Rules & instructions</div>
           </a>
+          <button onClick={async () => {
+            const res = await fetch("/api/agent/autonomous", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({floorId: floor}) });
+            const data = await res.json();
+            if (data.decisions) {
+              loadData();
+              setShowActivity(true);
+            }
+          }} className="glass rounded-xl p-4 hover:border-emerald-400/30 transition-colors text-center">
+            <Bot className="w-5 h-5 text-emerald-400 mx-auto mb-1" />
+            <div className="text-xs font-medium">Run Agent</div>
+            <div className="text-[10px] text-gray-500">Autonomous actions</div>
+          </button>
+          <button onClick={async () => {
+            const res = await fetch("/api/agent/sentinel", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({}) });
+            const data = await res.json();
+            if (data.assessment) {
+              loadData();
+              setShowActivity(true);
+            }
+          }} className="glass rounded-xl p-4 hover:border-red-400/30 transition-colors text-center">
+            <Shield className="w-5 h-5 text-red-400 mx-auto mb-1" />
+            <div className="text-xs font-medium">Safety Sentinel</div>
+            <div className="text-[10px] text-gray-500">Independent eval</div>
+          </button>
           <a href="/audit" className="glass rounded-xl p-4 hover:border-purple-400/30 transition-colors text-center">
             <Globe className="w-5 h-5 text-purple-400 mx-auto mb-1" />
             <div className="text-xs font-medium">Audit Trail</div>
             <div className="text-[10px] text-gray-500">Signed records</div>
-          </a>
-          <a href="/chat" className="glass rounded-xl p-4 hover:border-emerald-400/30 transition-colors text-center">
-            <MessageSquare className="w-5 h-5 text-emerald-400 mx-auto mb-1" />
-            <div className="text-xs font-medium">Agent Chat</div>
-            <div className="text-[10px] text-gray-500">9 live tools</div>
           </a>
         </div>
       )}
