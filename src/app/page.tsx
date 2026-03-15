@@ -142,12 +142,27 @@ export default function Home() {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12 animate-fade-in">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 text-xs text-emerald-400 mb-4">
-            <CheckCircle className="w-3.5 h-3.5" />
-            {isVerified ? "Verified Human" : "Connected"}
-          </div>
-          <h1 className="text-3xl font-bold mb-2">Welcome to Frontier Tower</h1>
-          <p className="text-gray-400">Which floor are you on? Each floor has its own budget, governance, and AI agent.</p>
+          {isVerified ? (
+            <>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-400/10 border border-emerald-400/20 text-sm text-emerald-400 mb-4">
+                <CheckCircle className="w-4 h-4" />
+                Humanity Verified — Full Governance Access
+              </div>
+              <h1 className="text-3xl font-bold mb-2">Welcome to Frontier Tower</h1>
+              <p className="text-gray-400 mb-2">You can vote on proposals, create new ones, set agent rules, and manage floor budgets.</p>
+              <p className="text-xs text-gray-500">Select your floor to get started.</p>
+            </>
+          ) : (
+            <>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-400/10 border border-yellow-400/20 text-sm text-yellow-400 mb-4">
+                <AlertTriangle className="w-4 h-4" />
+                Connected — View Only
+              </div>
+              <h1 className="text-3xl font-bold mb-2">Welcome to Frontier Tower</h1>
+              <p className="text-gray-400 mb-2">You can browse floors and chat with the agent. <a href="https://frontier.human.tech" target="_blank" className="text-cyan-400 hover:underline">Verify your humanity</a> to participate in governance.</p>
+              <p className="text-xs text-gray-500">Select your floor to explore.</p>
+            </>
+          )}
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {building.floors.map((f) => (
