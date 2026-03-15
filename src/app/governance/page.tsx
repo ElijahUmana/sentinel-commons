@@ -346,9 +346,9 @@ export default function GovernancePage() {
                           ? "bg-cyan-400/10 text-cyan-400 border border-cyan-400/20"
                           : proposal.status === "passed"
                           ? "bg-emerald-400/10 text-emerald-400 border border-emerald-400/20"
-                          : "bg-red-400/10 text-red-400 border border-red-400/20"
+                          : "bg-gray-700/50 text-gray-400 border border-gray-600"
                       }`}>
-                        {proposal.status}
+                        {proposal.status === "active" ? "open for feedback" : proposal.status === "passed" ? "executed" : "withdrawn"}
                       </span>
                       {proposal.floorId ? (
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-400">
@@ -383,29 +383,32 @@ export default function GovernancePage() {
                   </div>
                 </div>
 
-                {/* Lead: approve/reject buttons */}
-                {proposal.status === "active" && isLead && isVerified && (
-                  <div className="flex gap-2 mt-3">
-                    <button
-                      onClick={() => vote(proposal.id, "for")}
-                      disabled={votingOn === proposal.id}
-                      className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-emerald-400/10 border border-emerald-400/20 text-emerald-400 hover:bg-emerald-400/20 transition-colors disabled:opacity-50"
-                    >
-                      {votingOn === proposal.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3" />}
-                      Approve
-                    </button>
-                    <button
-                      onClick={() => vote(proposal.id, "against")}
-                      disabled={votingOn === proposal.id}
-                      className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-red-400/10 border border-red-400/20 text-red-400 hover:bg-red-400/20 transition-colors disabled:opacity-50"
-                    >
-                      <XCircle className="w-3 h-3" /> Reject
-                    </button>
+                {/* Lead: execute/withdraw after member feedback */}
+                {proposal.status === "active" && isLead && isVerified && !voted && (
+                  <div className="mt-3">
+                    <div className="text-[10px] text-gray-500 mb-2">Open for member feedback. When ready, execute or withdraw.</div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => vote(proposal.id, "for")}
+                        disabled={votingOn === proposal.id}
+                        className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-emerald-400/10 border border-emerald-400/20 text-emerald-400 hover:bg-emerald-400/20 transition-colors disabled:opacity-50"
+                      >
+                        {votingOn === proposal.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3" />}
+                        Execute
+                      </button>
+                      <button
+                        onClick={() => vote(proposal.id, "against")}
+                        disabled={votingOn === proposal.id}
+                        className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-gray-800 border border-gray-700 text-gray-400 hover:text-white transition-colors disabled:opacity-50"
+                      >
+                        <XCircle className="w-3 h-3" /> Withdraw
+                      </button>
+                    </div>
                   </div>
                 )}
                 {proposal.status === "active" && !isLead && (
                   <div className="mt-3 text-[10px] text-gray-500">
-                    Floor lead manages proposals. Chat with the agent to suggest ideas.
+                    Open for feedback — discuss with the agent in chat. Floor lead will execute when ready.
                   </div>
                 )}
                 {proposal.status === "active" && isLead && voted && (
