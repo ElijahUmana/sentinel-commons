@@ -38,6 +38,10 @@ export default function Home() {
   const [runningEval, setRunningEval] = useState(false);
   const [evalResult, setEvalResult] = useState<Record<string, unknown> | null>(null);
   const [showActivity, setShowActivity] = useState(false);
+  const [runningAutonomous, setRunningAutonomous] = useState(false);
+  const [autonomousResult, setAutonomousResult] = useState<string | null>(null);
+  const [runningSentinel, setRunningSentinel] = useState(false);
+  const [sentinelResult, setSentinelResult] = useState<string | null>(null);
   const [showTrust, setShowTrust] = useState(false);
 
   const building = getBuildingData();
@@ -370,12 +374,25 @@ export default function Home() {
               {runningEval ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}
               {runningEval ? "Running..." : "Full Inspect AI evaluation"}
             </button>
-            <button onClick={async () => { await fetch("/api/agent/sentinel", {method:"POST",headers:{"Content-Type":"application/json"},body:"{}"}); loadData(); }}
-              className="flex items-center gap-1 text-[10px] px-2 py-1 bg-red-400/10 border border-red-400/20 rounded text-red-400 hover:bg-red-400/20">
-              <Shield className="w-3 h-3" /> Safety Sentinel eval
+            <button disabled={runningSentinel} onClick={async () => {
+              setRunningSentinel(true); setSentinelResult(null);
+              try {
+                const res = await fetch("/api/agent/sentinel", {method:"POST",headers:{"Content-Type":"application/json"},body:"{}"});
+                const data = await res.json();
+                const a = data.assessment || {};
+                setSentinelResult(`Score: ${(a.overall_score * 100).toFixed(0)}% | Risk: ${a.risk_level} | ${a.findings?.length || 0} findings`);
+                setShowActivity(true); loadData();
+              } catch { setSentinelResult("Failed"); }
+              setRunningSentinel(false);
+            }} className="flex items-center gap-1 text-[10px] px-2 py-1 bg-red-400/10 border border-red-400/20 rounded text-red-400 hover:bg-red-400/20 disabled:opacity-50">
+              {runningSentinel ? <Loader2 className="w-3 h-3 animate-spin" /> : <Shield className="w-3 h-3" />}
+              {runningSentinel ? "Evaluating..." : "Safety Sentinel eval"}
             </button>
             {evalResult && !("error" in evalResult) && (
               <span className="text-[10px] text-emerald-400 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> {String((evalResult.evaluation as Record<string,unknown>)?.accuracy ?? "?")} accuracy</span>
+            )}
+            {sentinelResult && (
+              <span className="text-[10px] text-cyan-400 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> {sentinelResult}</span>
             )}
           </div>
         )}
@@ -414,11 +431,25 @@ export default function Home() {
         </div>
 
         {role === "lead" && (
-          <div className="mt-3 pt-3 border-t border-gray-800 flex gap-2">
-            <button onClick={async () => { await fetch("/api/agent/autonomous", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({floorId:floor})}); loadData(); }}
-              className="flex items-center gap-1 text-[10px] px-2 py-1 bg-emerald-400/10 border border-emerald-400/20 rounded text-emerald-400 hover:bg-emerald-400/20">
-              <Bot className="w-3 h-3" /> Run agent autonomously
-            </button>
+          <div className="mt-3 pt-3 border-t border-gray-800">
+            <div className="flex items-center gap-2">
+              <button disabled={runningAutonomous} onClick={async () => {
+                setRunningAutonomous(true); setAutonomousResult(null);
+                try {
+                  const res = await fetch("/api/agent/autonomous", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({floorId:floor})});
+                  const data = await res.json();
+                  setAutonomousResult(`${data.decisions?.length || 0} decisions made, ${data.logged || 0} logged`);
+                  setShowActivity(true); loadData();
+                } catch { setAutonomousResult("Failed"); }
+                setRunningAutonomous(false);
+              }} className="flex items-center gap-1 text-[10px] px-2 py-1 bg-emerald-400/10 border border-emerald-400/20 rounded text-emerald-400 hover:bg-emerald-400/20 disabled:opacity-50">
+                {runningAutonomous ? <Loader2 className="w-3 h-3 animate-spin" /> : <Bot className="w-3 h-3" />}
+                {runningAutonomous ? "Agent thinking..." : "Run agent autonomously"}
+              </button>
+              {autonomousResult && (
+                <span className="text-[10px] text-emerald-400 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> {autonomousResult}</span>
+              )}
+            </div>
           </div>
         )}
       </div>

@@ -369,18 +369,11 @@ export default function GovernancePage() {
                   </div>
                 </div>
 
-                {/* Vote bar */}
-                <div className="mt-3">
-                  <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="text-emerald-400">For: {proposal.votesFor}</span>
-                    <span className="text-red-400">Against: {proposal.votesAgainst}</span>
-                  </div>
-                  <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-500"
-                      style={{ width: `${pctFor}%` }}
-                    />
-                  </div>
+                {/* Status indicator */}
+                <div className="mt-2 text-[10px] text-gray-500">
+                  {proposal.status === "active" && "Awaiting lead decision"}
+                  {proposal.status === "passed" && "✓ Executed — agent processed this instruction"}
+                  {proposal.status === "rejected" && "Withdrawn by lead"}
                 </div>
 
                 {/* Lead: execute/withdraw after member feedback */}
