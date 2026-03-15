@@ -516,32 +516,63 @@ export default function Home() {
         </div>
       )}
 
-      {/* BOUNTIES + BUDGET — the agent's managed resources */}
-      <button onClick={() => setShowTrust(!showTrust)} className="w-full glass rounded-xl flex items-center justify-between p-4 hover:bg-gray-900/30 transition-colors mb-4">
-        <div className="flex items-center gap-2">
-          <DollarSign className="w-4 h-4 text-emerald-400" />
-          <span className="text-sm font-semibold">Managed Resources</span>
-          <span className="text-[10px] text-gray-500">${budget?.total.toLocaleString()} budget · {floorInfo?.bounties.length} bounties</span>
-        </div>
-        <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showTrust ? "rotate-180" : ""}`} />
-      </button>
-
-      {showTrust && (
-        <div className="glass rounded-xl p-4 mb-4 space-y-3">
-          {budget && (
-            <div>
-              <div className="grid grid-cols-3 gap-2 mb-3 text-xs">
-                <div className="p-2 rounded-lg bg-gray-900/50 border border-gray-800 text-center">
-                  <div className="font-bold">${budget.total.toLocaleString()}</div><div className="text-[10px] text-gray-500">Total</div>
-                </div>
-                <div className="p-2 rounded-lg bg-gray-900/50 border border-gray-800 text-center">
-                  <div className="font-bold text-emerald-400">${budget.remaining.toLocaleString()}</div><div className="text-[10px] text-gray-500">Remaining</div>
-                </div>
-                <div className="p-2 rounded-lg bg-gray-900/50 border border-gray-800 text-center">
-                  <div className="font-bold text-gray-400">${budget.spent.toLocaleString()}</div><div className="text-[10px] text-gray-500">Spent</div>
-                </div>
+      {/* BOUNTIES — always visible, this is what members DO */}
+      {floorInfo && floorInfo.bounties.length > 0 && (
+        <div className="glass rounded-xl p-4 mb-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Wrench className="w-4 h-4 text-cyan-400" />
+              <span className="text-sm font-semibold">Floor Bounties</span>
+              <span className="text-[10px] text-gray-500">{floorInfo.bounties.filter(b => b.status === "open").length} open</span>
+            </div>
+            <span className="text-[10px] text-gray-600">Payments via Arkhai escrow</span>
+          </div>
+          {floorInfo.bounties.map((b, i) => (
+            <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-gray-900/50 border border-gray-800 mb-2">
+              <div>
+                <div className="text-xs font-medium">{b.title}</div>
+                <div className="text-[10px] text-gray-500">{b.amount} · SafetyArbiter verifies on completion</div>
               </div>
-              {role === "lead" && budget.transactions.slice(0, 4).map(tx => (
+              <div className="flex items-center gap-2">
+                {b.status === "open" && role === "member" && (
+                  <button onClick={(e) => {
+                    const btn = e.currentTarget; btn.textContent = "Claimed ✓"; btn.disabled = true;
+                    btn.className = "text-[10px] px-2 py-0.5 rounded bg-emerald-400/10 text-emerald-400 opacity-70";
+                    fetch("/api/activity", {method:"POST",headers:{"Content-Type":"application/json"},
+                      body:JSON.stringify({type:"bounty",action:`Claimed: "${b.title}"`,detail:`${b.amount} via Arkhai escrow. SafetyArbiter will verify.`,floor:floor||undefined,verified:true})}).catch(()=>{});
+                  }} className="text-[10px] px-3 py-1 rounded bg-emerald-400/20 text-emerald-400 hover:bg-emerald-400/30 font-medium">
+                    Claim this bounty
+                  </button>
+                )}
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${b.status === "open" ? "bg-cyan-400/10 text-cyan-400" : b.status === "claimed" ? "bg-yellow-400/10 text-yellow-400" : "bg-emerald-400/10 text-emerald-400"}`}>{b.status}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* BUDGET — compact for members, detailed for leads */}
+      {budget && (
+        <div className="glass rounded-xl p-4 mb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <DollarSign className="w-4 h-4 text-emerald-400" />
+            <span className="text-sm font-semibold">Floor Budget</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-xs">
+            <div className="p-2 rounded-lg bg-gray-900/50 border border-gray-800 text-center">
+              <div className="font-bold">${budget.total.toLocaleString()}</div><div className="text-[10px] text-gray-500">Total</div>
+            </div>
+            <div className="p-2 rounded-lg bg-gray-900/50 border border-gray-800 text-center">
+              <div className="font-bold text-emerald-400">${budget.remaining.toLocaleString()}</div><div className="text-[10px] text-gray-500">Remaining</div>
+            </div>
+            <div className="p-2 rounded-lg bg-gray-900/50 border border-gray-800 text-center">
+              <div className="font-bold text-gray-400">${budget.spent.toLocaleString()}</div><div className="text-[10px] text-gray-500">Spent</div>
+            </div>
+          </div>
+          {role === "lead" && (
+            <div className="mt-3 pt-3 border-t border-gray-800">
+              <div className="text-[10px] text-gray-500 mb-1">Recent transactions:</div>
+              {budget.transactions.slice(0, 4).map(tx => (
                 <div key={tx.id} className="flex justify-between p-1.5 text-[10px]">
                   <span className="text-gray-400">{tx.description.slice(0, 50)}</span>
                   <span className={tx.type === "income" ? "text-emerald-400" : "text-red-400"}>{tx.type === "income" ? "+" : "-"}${tx.amount}</span>
@@ -549,24 +580,32 @@ export default function Home() {
               ))}
             </div>
           )}
-          {floorInfo && floorInfo.bounties.length > 0 && (
-            <div>
-              <div className="text-xs font-medium mb-2">Bounties</div>
-              {floorInfo.bounties.map((b, i) => (
-                <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-gray-900/50 border border-gray-800 mb-1.5">
-                  <div><div className="text-xs">{b.title}</div><div className="text-[10px] text-gray-500">{b.amount}</div></div>
-                  <div className="flex items-center gap-2">
-                    {b.status === "open" && role === "member" && (
-                      <button onClick={(e) => { const btn = e.currentTarget; btn.textContent = "Claimed ✓"; btn.disabled = true; btn.className = "text-[10px] px-2 py-0.5 rounded bg-emerald-400/10 text-emerald-400 opacity-70";
-                        fetch("/api/activity", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({type:"bounty",action:`Claimed: "${b.title}"`,detail:`${b.amount} via Arkhai escrow`,floor:floor||undefined,verified:true})}).catch(()=>{});
-                      }} className="text-[10px] px-2 py-0.5 rounded bg-emerald-400/20 text-emerald-400 hover:bg-emerald-400/30">Claim</button>
-                    )}
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${b.status === "open" ? "bg-cyan-400/10 text-cyan-400" : b.status === "claimed" ? "bg-yellow-400/10 text-yellow-400" : "bg-emerald-400/10 text-emerald-400"}`}>{b.status}</span>
-                  </div>
-                </div>
-              ))}
+          <div className="text-[10px] text-gray-600 mt-2">Managed by AI agent · Yield via Meteora LP · Escrow via Arkhai</div>
+        </div>
+      )}
+
+      {/* FLOOR RESOURCES — what equipment is available */}
+      {floorInfo && (
+        <div className="glass rounded-xl p-4 mb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Calendar className="w-4 h-4 text-purple-400" />
+            <span className="text-sm font-semibold">Floor Resources</span>
+            <span className="text-[10px] text-gray-500">{floorInfo.memberCount} members</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {floorInfo.resources.map((r, i) => (
+              <div key={i} className="text-xs text-gray-400 flex items-center gap-1.5 p-2 rounded-lg bg-gray-900/50 border border-gray-800">
+                <Wrench className="w-3 h-3 text-gray-600 shrink-0" />
+                {r}
+              </div>
+            ))}
+          </div>
+          {floorInfo.currentEvents.length > 0 && (
+            <div className="mt-2 p-2 rounded-lg bg-emerald-400/5 border border-emerald-400/20 text-[10px] text-emerald-400">
+              Current event: {floorInfo.currentEvents[0]}
             </div>
           )}
+          <div className="text-[10px] text-gray-600 mt-2">Ask the agent in chat to find resources on other floors</div>
         </div>
       )}
     </div>
