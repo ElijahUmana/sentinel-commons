@@ -439,6 +439,77 @@ export default function GovernancePage() {
           </div>
         )}
       </div>
+
+      {/* Covenant of Humanistic Technologies */}
+      <div className="mt-8">
+        <div className="mb-4">
+          <h2 className="text-lg font-bold flex items-center gap-2">
+            <Shield className="w-5 h-5 text-emerald-400" />
+            Covenant of Humanistic Technologies
+          </h2>
+          <p className="text-xs text-gray-500">
+            Sentinel Commons is built on the principles of the{" "}
+            <a href="https://frontier.human.tech/manifesto-covenant" target="_blank" className="text-cyan-400 hover:underline">
+              Covenant of Humanistic Technologies
+            </a>
+            . These principles guide how our AI agents serve the community.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {[
+            { principle: "Universal Personhood", how: "Governance requires proof of personhood via Holonym SBT — not wealth, status, or identity documents.", color: "emerald" },
+            { principle: "Inalienable Ownership", how: "Agent signing keys managed in Lit Protocol TEEs. No custodian holds them. Users control their own keys.", color: "cyan" },
+            { principle: "Privacy by Default", how: "Holonym verifies humanity through zero-knowledge biometric proofs. Your identity is never revealed — only your uniqueness.", color: "purple" },
+            { principle: "Voluntary Accountability", how: "Agents are monitored with community consent. Safety evaluations are transparent. Humans set the rules.", color: "emerald" },
+            { principle: "Universal Security", how: "TEE-protected signing ensures evaluation results can't be forged. Decentralized storage ensures they can't be deleted.", color: "cyan" },
+            { principle: "Capital Serves Public Goods", how: "Floor budgets serve the community. Governance proposals fund events, equipment, and coordination — not extraction.", color: "purple" },
+          ].map((item) => (
+            <div key={item.principle} className={`glass rounded-xl p-4 border-l-2 border-l-${item.color}-400/50`}>
+              <div className={`text-sm font-semibold text-${item.color}-400 mb-1`}>{item.principle}</div>
+              <div className="text-xs text-gray-400">{item.how}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 glass rounded-xl p-4">
+          <div className="flex items-center justify-between">
+            <div className="text-xs text-gray-400">
+              Signed by <span className="text-emerald-400">Elijah Umana</span> on frontier.human.tech · March 14, 2026
+            </div>
+            <a href="https://frontier.human.tech/manifesto-covenant" target="_blank" className="text-[10px] text-cyan-400 hover:underline flex items-center gap-0.5">
+              View Covenant <ExternalLink className="w-2.5 h-2.5" />
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* SNTL Governance Token */}
+      <div className="mt-8">
+        <div className="mb-4">
+          <h2 className="text-lg font-bold flex items-center gap-2">
+            <Lock className="w-5 h-5 text-cyan-400" />
+            SNTL Governance Token
+          </h2>
+          <p className="text-xs text-gray-500">
+            Launched via Metaplex on Solana. 1 SNTL = 1x voting weight multiplier in floor governance.
+          </p>
+        </div>
+
+        <div className="glass rounded-xl p-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+            <div><div className="text-gray-500">Token</div><div className="font-medium">SNTL</div></div>
+            <div><div className="text-gray-500">Supply</div><div className="font-medium">1,000,000</div></div>
+            <div><div className="text-gray-500">Utility</div><div className="font-medium">Vote weight</div></div>
+            <div>
+              <div className="text-gray-500">Mint</div>
+              <a href="https://explorer.solana.com/address/D9eVpXeCj6qk41YsJkKxf8wa1BtWdwcgaJd8TMc2P53S?cluster=devnet" target="_blank" className="text-cyan-400 hover:underline font-mono text-[10px] flex items-center gap-0.5">
+                D9eV...P53S <ExternalLink className="w-2.5 h-2.5" />
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

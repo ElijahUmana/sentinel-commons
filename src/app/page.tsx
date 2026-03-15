@@ -226,6 +226,32 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Floor bounties */}
+      {floorInfo && floorInfo.bounties.length > 0 && (
+        <div className="glass rounded-xl p-4 mb-5 animate-slide-up" style={{animationDelay:"0.05s"}}>
+          <div className="flex items-center gap-2 mb-3">
+            <Wrench className="w-4 h-4 text-cyan-400" />
+            <span className="text-sm font-semibold">Bounties</span>
+            <span className="text-[10px] text-gray-500">via Arkhai escrow on Base Sepolia</span>
+          </div>
+          <div className="space-y-2">
+            {floorInfo.bounties.map((b, i) => (
+              <div key={i} className="flex items-center justify-between p-2.5 rounded-lg bg-gray-900/50 border border-gray-800">
+                <div>
+                  <div className="text-xs font-medium">{b.title}</div>
+                  <div className="text-[10px] text-gray-500">{b.amount}</div>
+                </div>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                  b.status === "open" ? "bg-cyan-400/10 text-cyan-400" :
+                  b.status === "claimed" ? "bg-yellow-400/10 text-yellow-400" :
+                  "bg-emerald-400/10 text-emerald-400"
+                }`}>{b.status}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* THE THREE LAYERS — why you can trust this agent */}
       <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Why you can trust this agent</h2>
 
