@@ -296,7 +296,10 @@ export default function Home() {
           </a>
         </div>
         <p className="text-xs text-gray-400 mb-4">
-          This agent manages Floor {floor}'s resources — coordinating events, sharing equipment, routing bounties, answering questions, and managing the floor budget. Every action is safety-tested, governed by verified humans, and stored with tamper-proof receipts.
+          {role === "lead"
+            ? `You manage Floor ${floor}'s budget, bounties, and governance. The AI agent handles coordination, resource sharing, and member queries. Every action is safety-tested, governed by verified humans, and stored with tamper-proof receipts.`
+            : `This agent coordinates Floor ${floor} — answering questions, finding resources across floors, and managing community activities. All actions are monitored by the Safety Sentinel and governed by verified humans.`
+          }
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
           <div className="p-2.5 rounded-lg bg-gray-900/50 border border-gray-800">
@@ -437,6 +440,57 @@ export default function Home() {
             ))}
           </div>
           <div className="text-[10px] text-gray-600 mt-2">Managed by AI agent · All expenses require governance approval · Audit trail on Solana + Bittensor</div>
+        </div>
+      )}
+
+      {/* Member: prominent chat + governance quick actions */}
+      {role === "member" && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+          <a href="/chat" className="glass rounded-xl p-5 hover:border-emerald-400/30 transition-colors group">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-emerald-400/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <MessageSquare className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div>
+                <div className="font-semibold">Chat with Agent</div>
+                <div className="text-xs text-gray-400">Ask questions, find resources, get help</div>
+              </div>
+            </div>
+            <div className="text-[10px] text-gray-500">The agent can search equipment across all floors, explain governance, check treasury, and pull live market data.</div>
+          </a>
+          <a href="/governance" className="glass rounded-xl p-5 hover:border-cyan-400/30 transition-colors group">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-cyan-400/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Vote className="w-5 h-5 text-cyan-400" />
+              </div>
+              <div>
+                <div className="font-semibold">Governance</div>
+                <div className="text-xs text-gray-400">{activeProposals.length} proposal{activeProposals.length !== 1 ? "s" : ""} need your vote</div>
+              </div>
+            </div>
+            <div className="text-[10px] text-gray-500">{isVerified ? "You're verified — you can vote and propose." : "Verify at frontier.human.tech to participate."}</div>
+          </a>
+        </div>
+      )}
+
+      {/* Lead: management quick actions */}
+      {role === "lead" && (
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          <a href="/governance" className="glass rounded-xl p-4 hover:border-cyan-400/30 transition-colors text-center">
+            <Vote className="w-5 h-5 text-cyan-400 mx-auto mb-1" />
+            <div className="text-xs font-medium">Proposals & Rules</div>
+            <div className="text-[10px] text-gray-500">{activeProposals.length} active</div>
+          </a>
+          <a href="/audit" className="glass rounded-xl p-4 hover:border-purple-400/30 transition-colors text-center">
+            <Globe className="w-5 h-5 text-purple-400 mx-auto mb-1" />
+            <div className="text-xs font-medium">Audit Trail</div>
+            <div className="text-[10px] text-gray-500">Signed records</div>
+          </a>
+          <a href="/chat" className="glass rounded-xl p-4 hover:border-emerald-400/30 transition-colors text-center">
+            <MessageSquare className="w-5 h-5 text-emerald-400 mx-auto mb-1" />
+            <div className="text-xs font-medium">Agent Chat</div>
+            <div className="text-[10px] text-gray-500">9 live tools</div>
+          </a>
         </div>
       )}
 

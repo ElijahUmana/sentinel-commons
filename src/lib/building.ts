@@ -1,9 +1,24 @@
 /**
- * Frontier Tower building data module.
+ * Frontier Tower Building Data Module
  *
- * Currently uses structured data based on real Frontier Tower floor info.
- * Designed to be replaced with real API connections when Frontier Tower
- * provides their member database, event calendar, and resource system.
+ * DATA SOURCE: Structured static data based on real Frontier Tower floor info.
+ *
+ * TO SWAP WITH REAL DATA:
+ * Replace the implementation of getBuildingData() with an API call to
+ * Frontier Tower's actual system. The interface (Floor, BuildingData)
+ * stays the same. Everything downstream (dashboard, chat, governance)
+ * automatically uses the real data.
+ *
+ * Example:
+ *   export async function getBuildingData(): Promise<BuildingData> {
+ *     const res = await fetch('https://api.frontiertower.io/building');
+ *     return res.json();
+ *   }
+ *
+ * Same pattern applies to:
+ *   src/lib/budget.ts    → replace with real financial API
+ *   src/lib/activity.ts  → replace with real activity stream
+ *   src/lib/store.ts     → replace with real database (PostgreSQL, etc.)
  */
 
 export interface Floor {
