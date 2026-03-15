@@ -127,16 +127,13 @@ export async function POST(req: Request) {
 
     if (body.vote === "for") {
       proposal.votesFor++;
+      // Floor lead approval = proposal passes immediately
+      proposal.status = "passed";
     } else {
       proposal.votesAgainst++;
+      proposal.status = "rejected";
     }
     proposal.voters[voterAddr] = body.vote;
-
-    // Check if passed (>50% with at least 5 votes)
-    const total = proposal.votesFor + proposal.votesAgainst;
-    if (total >= 5 && proposal.votesFor / total > 0.5) {
-      proposal.status = "passed";
-    }
 
     await store.setJSON("proposals", proposals);
     return NextResponse.json({ proposal });

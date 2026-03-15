@@ -381,10 +381,16 @@ export default function Home() {
       {/* Floor bounties */}
       {floorInfo && floorInfo.bounties.length > 0 && (
         <div className="glass rounded-xl p-4 mb-5 animate-slide-up" style={{animationDelay:"0.05s"}}>
-          <div className="flex items-center gap-2 mb-3">
-            <Wrench className="w-4 h-4 text-cyan-400" />
-            <span className="text-sm font-semibold">Bounties</span>
-            <span className="text-[10px] text-gray-500">via Arkhai escrow on Base Sepolia</span>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Wrench className="w-4 h-4 text-cyan-400" />
+              <span className="text-sm font-semibold">Bounties</span>
+              <span className="text-[10px] text-gray-500">via Arkhai escrow</span>
+            </div>
+            {role === "lead" && (
+              <button onClick={() => { const title = prompt("Bounty title:"); if (title) { const amt = prompt("Amount (e.g. 50 USDC):"); if (amt) alert(`Bounty "${title}" for ${amt} would be created via Arkhai escrow. In production, this creates an on-chain escrow on Base Sepolia.`); }}}
+                className="text-[10px] text-cyan-400 hover:underline">+ Create bounty</button>
+            )}
           </div>
           <div className="space-y-2">
             {floorInfo.bounties.map((b, i) => (
@@ -393,11 +399,19 @@ export default function Home() {
                   <div className="text-xs font-medium">{b.title}</div>
                   <div className="text-[10px] text-gray-500">{b.amount}</div>
                 </div>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                  b.status === "open" ? "bg-cyan-400/10 text-cyan-400" :
-                  b.status === "claimed" ? "bg-yellow-400/10 text-yellow-400" :
-                  "bg-emerald-400/10 text-emerald-400"
-                }`}>{b.status}</span>
+                <div className="flex items-center gap-2">
+                  {b.status === "open" && role === "member" && (
+                    <button onClick={() => alert(`You claimed "${b.title}" for ${b.amount}. In production, this locks funds in Arkhai escrow — you complete the work, the SafetyArbiter verifies, and payment is released.`)}
+                      className="text-[10px] px-2 py-0.5 rounded bg-emerald-400/20 text-emerald-400 hover:bg-emerald-400/30 transition-colors">
+                      Claim
+                    </button>
+                  )}
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                    b.status === "open" ? "bg-cyan-400/10 text-cyan-400" :
+                    b.status === "claimed" ? "bg-yellow-400/10 text-yellow-400" :
+                    "bg-emerald-400/10 text-emerald-400"
+                  }`}>{b.status}</span>
+                </div>
               </div>
             ))}
           </div>

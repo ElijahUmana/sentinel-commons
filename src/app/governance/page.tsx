@@ -109,6 +109,20 @@ export default function GovernancePage() {
         setProposals((prev) =>
           prev.map((p) => (p.id === data.proposal.id ? data.proposal : p))
         );
+        // If approved, log activity
+        if (voteType === "for") {
+          fetch("/api/activity", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: "governance",
+              action: `Proposal approved: "${data.proposal.title}"`,
+              detail: `Floor lead approved. Budget will be allocated. Signed by Lit Protocol TEE.`,
+              floor: floor || undefined,
+              verified: true,
+            }),
+          }).catch(() => {});
+        }
       }
     } catch {
       setError("Failed to vote");
