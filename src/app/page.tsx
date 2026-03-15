@@ -41,7 +41,11 @@ export default function Home() {
   const [runningAutonomous, setRunningAutonomous] = useState(false);
   const [autonomousResult, setAutonomousResult] = useState<string | null>(null);
   const [runningSentinel, setRunningSentinel] = useState(false);
-  const [sentinelResult, setSentinelResult] = useState<string | null>(null);
+  const [sentinelResult, setSentinelResult] = useState<{
+    score: number; risk: string; summary: string;
+    findings: { finding: string; severity: string; recommendation: string }[];
+    signed: boolean; signer: string;
+  } | null>(null);
   const [showTrust, setShowTrust] = useState(false);
 
   const building = getBuildingData();
@@ -394,9 +398,17 @@ export default function Home() {
                 const res = await fetch("/api/agent/sentinel", {method:"POST",headers:{"Content-Type":"application/json"},body:"{}"});
                 const data = await res.json();
                 const a = data.assessment || {};
-                setSentinelResult(`Score: ${(a.overall_score * 100).toFixed(0)}% | Risk: ${a.risk_level} | ${a.findings?.length || 0} findings`);
+                const att = data.attestation || {};
+                setSentinelResult({
+                  score: a.overall_score || 0,
+                  risk: a.risk_level || "unknown",
+                  summary: a.summary || "",
+                  findings: a.findings || [],
+                  signed: att.signed || false,
+                  signer: att.signer || "",
+                });
                 setShowActivity(true); loadData();
-              } catch { setSentinelResult("Failed"); }
+              } catch { setSentinelResult({ score: 0, risk: "error", summary: "Evaluation failed", findings: [], signed: false, signer: "" }); }
               setRunningSentinel(false);
             }} className="flex items-center gap-1 text-[10px] px-2 py-1 bg-red-400/10 border border-red-400/20 rounded text-red-400 hover:bg-red-400/20 disabled:opacity-50">
               {runningSentinel ? <Loader2 className="w-3 h-3 animate-spin" /> : <Shield className="w-3 h-3" />}
@@ -419,13 +431,39 @@ export default function Home() {
             <div className="mt-3 p-3 rounded-lg bg-red-400/5 border border-red-400/20 text-xs text-red-400">{String(evalResult.error).slice(0, 150)}</div>
           )}
           {sentinelResult && (
-            <div className="mt-3 p-3 rounded-lg bg-cyan-400/5 border border-cyan-400/20 animate-fade-in">
-              <div className="flex items-center gap-2 mb-1">
-                <Shield className="w-4 h-4 text-cyan-400" />
-                <span className="text-sm font-medium text-cyan-400">Safety Sentinel Assessment</span>
+            <div className="mt-3 p-4 rounded-lg bg-cyan-400/5 border border-cyan-400/20 animate-fade-in">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-cyan-400" />
+                  <span className="text-sm font-medium text-cyan-400">Safety Sentinel Assessment</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px]">
+                  <span className={`px-2 py-0.5 rounded-full ${sentinelResult.risk === "low" ? "bg-emerald-400/10 text-emerald-400" : sentinelResult.risk === "medium" ? "bg-yellow-400/10 text-yellow-400" : "bg-red-400/10 text-red-400"}`}>
+                    {sentinelResult.risk} risk
+                  </span>
+                  <span className="text-white font-bold">{(sentinelResult.score * 100).toFixed(0)}%</span>
+                </div>
               </div>
-              <div className="text-xs text-gray-300">{sentinelResult}</div>
-              <div className="text-[10px] text-gray-500 mt-1">Independent evaluation by separate AI agent with its own PKP</div>
+              <div className="text-xs text-gray-300 mb-3">{sentinelResult.summary}</div>
+              {sentinelResult.findings.length > 0 && (
+                <div className="space-y-1.5">
+                  <div className="text-[10px] text-gray-500 font-medium">Findings ({sentinelResult.findings.length}):</div>
+                  {sentinelResult.findings.map((f, i) => (
+                    <div key={i} className="flex items-start gap-2 p-2 rounded bg-gray-900/50 text-[10px]">
+                      <span className={`shrink-0 px-1.5 py-0.5 rounded ${f.severity === "positive" || f.severity === "info" ? "bg-emerald-400/10 text-emerald-400" : f.severity === "low" ? "bg-yellow-400/10 text-yellow-400" : "bg-red-400/10 text-red-400"}`}>
+                        {f.severity}
+                      </span>
+                      <div>
+                        <div className="text-gray-300">{f.finding}</div>
+                        {f.recommendation && <div className="text-gray-500 mt-0.5">→ {f.recommendation}</div>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="text-[10px] text-gray-500 mt-2 pt-2 border-t border-gray-800">
+                {sentinelResult.signed ? `✓ Signed by PKP ${sentinelResult.signer.slice(0, 14)}...` : "Signing pending"} · Independent AI agent evaluation
+              </div>
             </div>
           )}
         </>)}
