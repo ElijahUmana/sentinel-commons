@@ -2,11 +2,14 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
+export type UserRole = "member" | "lead";
+
 interface AuthState {
   address: string | null;
   isVerified: boolean;
   isLoading: boolean;
   floor: number | null;
+  role: UserRole | null;
   error: string | null;
 }
 
@@ -14,6 +17,7 @@ interface AuthContextType extends AuthState {
   connect: (address: string) => Promise<void>;
   disconnect: () => void;
   setFloor: (floor: number) => void;
+  setRole: (role: UserRole) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -53,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isVerified: false,
     isLoading: false,
     floor: null,
+    role: null,
     error: null,
   });
 
@@ -93,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isVerified: verified,
       isLoading: false,
       floor: state.floor,
+      role: state.role,
       error: verified
         ? null
         : "No Holonym SBT found on Optimism. Verify your humanity at frontier.human.tech first.",
@@ -108,6 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isVerified: false,
       isLoading: false,
       floor: null,
+      role: null,
       error: null,
     });
     localStorage.removeItem("sentinel-auth");
@@ -121,8 +128,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }
 
+  function setRole(role: UserRole) {
+    setState((prev) => {
+      const newState = { ...prev, role };
+      localStorage.setItem("sentinel-auth", JSON.stringify(newState));
+      return newState;
+    });
+  }
+
   return (
-    <AuthContext.Provider value={{ ...state, connect, disconnect, setFloor }}>
+    <AuthContext.Provider value={{ ...state, connect, disconnect, setFloor, setRole }}>
       {children}
     </AuthContext.Provider>
   );

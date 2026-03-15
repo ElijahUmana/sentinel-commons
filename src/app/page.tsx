@@ -21,7 +21,7 @@ interface EscrowItem {
 }
 
 export default function Home() {
-  const { address, isVerified, floor, setFloor } = useAuth();
+  const { address, isVerified, floor, role, setFloor, setRole } = useAuth();
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [escrows, setEscrows] = useState<EscrowItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -206,6 +206,54 @@ export default function Home() {
   }
 
   // ═══════════════════════════════════════════════════
+  // CONNECTED + FLOOR but no role — Role selection
+  // ═══════════════════════════════════════════════════
+  if (!role) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-12 animate-fade-in">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold mb-2">
+            Floor {floor}: <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">{floorInfo?.name}</span>
+          </h1>
+          <p className="text-gray-400">What's your role on this floor?</p>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <button
+            onClick={() => setRole("member")}
+            className="glass rounded-xl p-6 text-left hover:border-emerald-400/30 transition-all hover:scale-[1.02] group"
+          >
+            <Users className="w-8 h-8 text-emerald-400 mb-3 group-hover:scale-110 transition-transform" />
+            <div className="text-lg font-semibold mb-1">Floor Member</div>
+            <div className="text-xs text-gray-400 space-y-1">
+              <div>• View floor activity and events</div>
+              <div>• Chat with the community agent</div>
+              <div>• Vote on proposals</div>
+              <div>• Claim bounties</div>
+            </div>
+          </button>
+          <button
+            onClick={() => setRole("lead")}
+            className="glass rounded-xl p-6 text-left hover:border-cyan-400/30 transition-all hover:scale-[1.02] group"
+          >
+            <Shield className="w-8 h-8 text-cyan-400 mb-3 group-hover:scale-110 transition-transform" />
+            <div className="text-lg font-semibold mb-1">Floor Lead</div>
+            <div className="text-xs text-gray-400 space-y-1">
+              <div>• Manage floor budget and spending</div>
+              <div>• Create proposals and bounties</div>
+              <div>• Set agent behavioral rules</div>
+              <div>• Run safety evaluations</div>
+              <div>• View audit trail</div>
+            </div>
+          </button>
+        </div>
+        <div className="text-center mt-4">
+          <button onClick={() => setFloor(0 as never)} className="text-xs text-gray-500 hover:text-white">← Change floor</button>
+        </div>
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════════════════
   // FLOOR SELECTED — The Frontier Tower experience
   // ═══════════════════════════════════════════════════
   const activeProposals = proposals.filter(p => p.status === "active");
@@ -221,8 +269,12 @@ export default function Home() {
           <div className="text-xs text-gray-500">{floorInfo?.description}</div>
         </div>
         <div className="flex items-center gap-2 text-[10px]">
+          <span className={`flex items-center gap-1 px-2 py-1 rounded-full ${role === "lead" ? "bg-cyan-400/10 text-cyan-400" : "bg-gray-800 text-gray-400"}`}>
+            {role === "lead" ? <Shield className="w-3 h-3" /> : <Users className="w-3 h-3" />}
+            {role === "lead" ? "Floor Lead" : "Member"}
+          </span>
           {isVerified && <span className="flex items-center gap-1 text-emerald-400 px-2 py-1 bg-emerald-400/10 rounded-full"><CheckCircle className="w-3 h-3" /> Verified</span>}
-          <button onClick={() => setFloor(0 as never)} className="text-gray-500 hover:text-white">Switch floor</button>
+          <button onClick={() => setRole("member" as never)} className="text-gray-500 hover:text-white">Switch role</button>
         </div>
       </div>
 
@@ -287,6 +339,41 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Budget management — floor leads only */}
+      {role === "lead" && floorInfo && (
+        <div className="glass rounded-xl p-5 mb-5 animate-slide-up" style={{animationDelay:"0.1s"}}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-emerald-400" />
+              <span className="font-semibold">Budget Management</span>
+            </div>
+            <a href="/governance" className="text-[10px] text-cyan-400 hover:underline">Create proposal →</a>
+          </div>
+          <div className="grid grid-cols-3 gap-3 mb-3">
+            <div className="p-3 rounded-lg bg-gray-900/50 border border-gray-800 text-center">
+              <div className="text-lg font-bold text-white">${floorInfo.budget.total.toLocaleString()}</div>
+              <div className="text-[10px] text-gray-500">Total Budget</div>
+            </div>
+            <div className="p-3 rounded-lg bg-gray-900/50 border border-gray-800 text-center">
+              <div className="text-lg font-bold text-emerald-400">${(floorInfo.budget.total - floorInfo.budget.spent).toLocaleString()}</div>
+              <div className="text-[10px] text-gray-500">Remaining</div>
+            </div>
+            <div className="p-3 rounded-lg bg-gray-900/50 border border-gray-800 text-center">
+              <div className="text-lg font-bold text-gray-300">${floorInfo.budget.spent.toLocaleString()}</div>
+              <div className="text-[10px] text-gray-500">Spent</div>
+            </div>
+          </div>
+          <div className="text-xs text-gray-500 mb-2">Recent transactions:</div>
+          <div className="space-y-1.5 text-xs">
+            <div className="flex justify-between p-2 rounded bg-gray-900/30"><span className="text-gray-400">AI Safety Reading Group (approved)</span><span className="text-red-400">-$200</span></div>
+            <div className="flex justify-between p-2 rounded bg-gray-900/30"><span className="text-gray-400">Meteora LP yield earned</span><span className="text-emerald-400">+$450</span></div>
+            <div className="flex justify-between p-2 rounded bg-gray-900/30"><span className="text-gray-400">Equipment maintenance</span><span className="text-red-400">-$150</span></div>
+            <div className="flex justify-between p-2 rounded bg-gray-900/30"><span className="text-gray-400">Bounty: Set up monitoring dashboard</span><span className="text-red-400">-$150</span></div>
+          </div>
+          <div className="text-[10px] text-gray-600 mt-2">Managed by AI agent · All transactions require governance approval · Audit trail on Solana + Bittensor</div>
         </div>
       )}
 
@@ -357,18 +444,20 @@ export default function Home() {
             </div>
           )}
 
-          <div className="flex items-center gap-3 mt-3">
-            <button onClick={runSafetyEval} disabled={runningEval}
-              className="flex items-center gap-1 text-[10px] px-2 py-1 bg-emerald-400/10 border border-emerald-400/20 rounded text-emerald-400 hover:bg-emerald-400/20 disabled:opacity-50">
-              {runningEval ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}
-              {runningEval ? "Running Inspect AI..." : "Run full evaluation (11 scenarios)"}
-            </button>
-            {evalResult && !("error" in evalResult) && (
-              <span className="text-[10px] text-emerald-400 flex items-center gap-1">
-                <CheckCircle className="w-3 h-3" /> Accuracy: {String((evalResult.evaluation as Record<string,unknown>)?.accuracy ?? "?")} — signed & stored
-              </span>
-            )}
-          </div>
+          {role === "lead" && (
+            <div className="flex items-center gap-3 mt-3">
+              <button onClick={runSafetyEval} disabled={runningEval}
+                className="flex items-center gap-1 text-[10px] px-2 py-1 bg-emerald-400/10 border border-emerald-400/20 rounded text-emerald-400 hover:bg-emerald-400/20 disabled:opacity-50">
+                {runningEval ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}
+                {runningEval ? "Running Inspect AI..." : "Run full evaluation (11 scenarios)"}
+              </button>
+              {evalResult && !("error" in evalResult) && (
+                <span className="text-[10px] text-emerald-400 flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" /> Accuracy: {String((evalResult.evaluation as Record<string,unknown>)?.accuracy ?? "?")} — signed & stored
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* LAYER 2: GOVERNANCE */}
