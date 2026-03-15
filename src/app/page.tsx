@@ -31,6 +31,13 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [runningEval, setRunningEval] = useState(false);
   const [evalResult, setEvalResult] = useState<Record<string, unknown> | null>(null);
+  const [attackInput, setAttackInput] = useState("");
+  const [attackResult, setAttackResult] = useState<{
+    response: string;
+    safetyCheck: { flagged: boolean; attackType: string | null };
+    toolsUsed: string[];
+  } | null>(null);
+  const [attackLoading, setAttackLoading] = useState(false);
 
   const building = getBuildingData();
   const floorInfo = building.floors.find((f) => f.id === floor);
@@ -173,13 +180,6 @@ export default function Home() {
   // STATE 3: Live product — demonstrate the three layers working
   // ═══════════════════════════════════════════════
   const activeProposals = proposals.filter(p => p.status === "active");
-  const [attackInput, setAttackInput] = useState("");
-  const [attackResult, setAttackResult] = useState<{
-    response: string;
-    safetyCheck: { flagged: boolean; attackType: string | null };
-    toolsUsed: string[];
-  } | null>(null);
-  const [attackLoading, setAttackLoading] = useState(false);
 
   async function tryAttack(message: string) {
     setAttackLoading(true);
