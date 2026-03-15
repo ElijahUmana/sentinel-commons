@@ -127,6 +127,17 @@ const TOOLS: Anthropic.Messages.Tool[] = [
       required: ["query"],
     },
   },
+  {
+    name: "get_my_recent_actions",
+    description: "Returns what the agent has recently DONE — processed proposals, executed budget allocations, bounty management, attacks refused. Shows the agent is actively managing resources, not just answering questions.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        limit: { type: "number", description: "Number of recent actions to return (default 5)" },
+      },
+      required: [],
+    },
+  },
 ];
 
 const UNBROWSE_URL = process.env.UNBROWSE_URL || "http://localhost:6969";
@@ -321,6 +332,24 @@ async function executeTool(name: string, input: Record<string, unknown>): Promis
           resource: r.resource,
         })),
         source: "Frontier Tower building data",
+      });
+    }
+
+    case "get_my_recent_actions": {
+      const { getActivities } = await import("@/lib/activity");
+      const limit = (input.limit as number) || 5;
+      const activities = await getActivities();
+      const recent = activities.slice(0, limit).map(a => ({
+        type: a.type,
+        action: a.action,
+        detail: a.detail,
+        verified: a.verified,
+        timestamp: a.timestamp,
+      }));
+      return JSON.stringify({
+        actions: recent,
+        total: activities.length,
+        note: "These are real actions I've taken — processing proposals, managing budgets, refusing attacks, coordinating resources. Each verified action is signed by Lit Protocol TEE and stored on Solana + Bittensor.",
       });
     }
 

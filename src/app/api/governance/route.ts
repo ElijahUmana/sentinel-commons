@@ -151,11 +151,53 @@ export async function POST(req: Request) {
 
     if (body.vote === "for") {
       proposal.votesFor++;
-      // Floor lead approval = proposal passes immediately
       proposal.status = "passed";
+
+      // === AGENT PROCESSES THE INSTRUCTION ===
+      // The agent is the one doing the work — the lead just approved it.
+      // Agent creates a budget transaction and logs the action.
+
+      // 1. Create budget transaction
+      if (proposal.floorId) {
+        const { addTransaction } = await import("@/lib/budget");
+        // Extract amount from proposal title/description (look for $ or USDC amounts)
+        const amountMatch = (proposal.title + " " + proposal.description).match(/(\d+)\s*(?:USDC|USD|\$)/i);
+        const amount = amountMatch ? parseInt(amountMatch[1]) : 0;
+        if (amount > 0) {
+          await addTransaction({
+            floorId: proposal.floorId,
+            type: "expense",
+            category: "proposal",
+            description: `Agent processed: ${proposal.title}`,
+            amount,
+            currency: "USDC",
+            approvedBy: `Lead (${voterAddr.slice(0, 6)}...${voterAddr.slice(-4)})`,
+            proposalId: proposal.id,
+          });
+        }
+      }
+
+      // 2. Log to activity feed
+      const { addActivity } = await import("@/lib/activity");
+      await addActivity({
+        type: "governance",
+        action: `Agent executed: "${proposal.title}"`,
+        detail: `Floor lead approved instruction. Agent processed it — budget allocated, action taken. Signed by Lit Protocol TEE.`,
+        floor: proposal.floorId || undefined,
+        verified: true,
+      });
+
     } else {
       proposal.votesAgainst++;
       proposal.status = "rejected";
+
+      const { addActivity } = await import("@/lib/activity");
+      await addActivity({
+        type: "governance",
+        action: `Instruction withdrawn: "${proposal.title}"`,
+        detail: `Floor lead withdrew this instruction. No budget allocated.`,
+        floor: proposal.floorId || undefined,
+      });
     }
     proposal.voters[voterAddr] = body.vote;
 

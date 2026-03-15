@@ -142,12 +142,12 @@ export default function GovernancePage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold mb-1">
-            {floor ? `Floor ${floor} Governance` : "Community Governance"}
+            Agent Governance {floor ? `— Floor ${floor}` : ""}
           </h1>
           <p className="text-gray-400 text-sm">
             {isLead
-              ? `${floorName} — manage proposals, agent rules, and budget allocation for your floor.`
-              : `${floorName || "Frontier Tower"} — view proposals and floor activity. Floor leads manage governance.`}
+              ? "Control how your floor's AI agent behaves. Set rules, issue instructions, monitor safety."
+              : "See how the AI agent is governed. Floor leads control agent behavior and permissions."}
           </p>
         </div>
         {floor && (
@@ -229,8 +229,8 @@ export default function GovernancePage() {
       {/* Tabs */}
       <div className="flex gap-1 mb-6 border-b border-gray-800 pb-px">
         {[
-          { id: "proposals" as const, label: "Proposals", count: proposals.filter(p => p.status === "active").length },
           { id: "rules" as const, label: "Agent Rules", count: rules.length },
+          { id: "proposals" as const, label: "Agent Instructions", count: proposals.filter(p => p.status === "active").length },
           { id: "covenant" as const, label: "Covenant & Token", count: null },
         ].map(tab => (
           <button
