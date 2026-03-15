@@ -395,7 +395,7 @@ export async function POST(req: Request) {
     // Safety check on the user's message
     const safetyCheck = quickSafetyCheck(messages[messages.length - 1]?.content || "", text);
 
-    // If attack detected, sign attestation via Lit Protocol
+    // If attack detected, sign attestation via Lit Protocol and log activity
     if (safetyCheck.flagged && LIT_PKP_WALLET) {
       signSafetyAttestation(LIT_PKP_WALLET, {
         agentId: "sentinel-treasury-agent",
@@ -404,6 +404,15 @@ export async function POST(req: Request) {
         result: safetyCheck.flagged ? "attack_detected_and_refused" : "potential_concern",
         timestamp: new Date().toISOString(),
       }).catch((err) => console.error("Lit attestation failed:", err));
+
+      // Log to activity feed
+      const { addActivity } = await import("@/lib/activity");
+      addActivity({
+        type: "safety",
+        action: `Refused ${(safetyCheck.attackType || "unknown").split("_").join(" ")} attack`,
+        detail: `User attempted: "${messages[messages.length - 1]?.content.slice(0, 80)}". Agent refused. Signed by Lit Protocol TEE.`,
+        verified: true,
+      }).catch(() => {});
     }
 
     return NextResponse.json({

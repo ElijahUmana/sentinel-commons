@@ -24,6 +24,7 @@ export default function Home() {
   const { address, isVerified, floor, role, setFloor, setRole } = useAuth();
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [escrows, setEscrows] = useState<EscrowItem[]>([]);
+  const [activities, setActivities] = useState<{ id: string; type: string; action: string; detail: string; timestamp: string; verified?: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
   const [attackInput, setAttackInput] = useState("");
   const [attackResult, setAttackResult] = useState<{
@@ -40,12 +41,14 @@ export default function Home() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    const [e, g] = await Promise.allSettled([
+    const [e, g, a] = await Promise.allSettled([
       fetch("/api/escrow").then(r => r.json()),
       fetch(`/api/governance${floor ? `?floorId=${floor}` : ""}`).then(r => r.json()),
+      fetch(`/api/activity${floor ? `?floorId=${floor}` : ""}`).then(r => r.json()),
     ]);
     if (e.status === "fulfilled") setEscrows(e.value.escrows || []);
     if (g.status === "fulfilled") setProposals(g.value.proposals || []);
+    if (a.status === "fulfilled") setActivities(a.value.activities || []);
     setLoading(false);
   }, [floor]);
 
@@ -315,6 +318,56 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Agent activity feed — what the agent has been DOING */}
+      {activities.length > 0 && (
+        <div className="glass rounded-xl p-4 mb-5 animate-slide-up" style={{animationDelay:"0.03s"}}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Bot className="w-4 h-4 text-emerald-400" />
+              <span className="text-sm font-semibold">Agent Activity</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            </div>
+            <span className="text-[10px] text-gray-500">Recent actions by the Community Coordinator</span>
+          </div>
+          <div className="space-y-1.5">
+            {activities.slice(0, role === "lead" ? 8 : 5).map((act) => {
+              const typeColors: Record<string, string> = {
+                safety: "text-red-400",
+                governance: "text-cyan-400",
+                budget: "text-emerald-400",
+                bounty: "text-purple-400",
+                coordination: "text-yellow-400",
+                chat: "text-gray-400",
+              };
+              const typeIcons: Record<string, string> = {
+                safety: "⚠",
+                governance: "🗳",
+                budget: "💰",
+                bounty: "🔧",
+                coordination: "🔗",
+                chat: "💬",
+              };
+              const minutesAgo = Math.round((Date.now() - new Date(act.timestamp).getTime()) / 60000);
+              const timeLabel = minutesAgo < 60 ? `${minutesAgo}m ago` : minutesAgo < 1440 ? `${Math.round(minutesAgo / 60)}h ago` : `${Math.round(minutesAgo / 1440)}d ago`;
+
+              return (
+                <div key={act.id} className="flex items-start gap-2 p-2 rounded-lg hover:bg-gray-900/30 transition-colors">
+                  <span className="text-xs mt-0.5">{typeIcons[act.type] || "•"}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs font-medium ${typeColors[act.type] || "text-gray-300"}`}>{act.action}</span>
+                      {act.verified && <Lock className="w-2.5 h-2.5 text-purple-400" />}
+                    </div>
+                    <div className="text-[10px] text-gray-500 line-clamp-1">{act.detail}</div>
+                  </div>
+                  <span className="text-[10px] text-gray-600 shrink-0">{timeLabel}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Floor bounties */}
       {floorInfo && floorInfo.bounties.length > 0 && (
