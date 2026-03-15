@@ -67,46 +67,117 @@ export default function Dashboard() {
   // Landing for non-connected users
   if (!address) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-        <div className="mb-8 animate-fade-in">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center mx-auto mb-6">
-            <Shield className="w-9 h-9 text-gray-950" />
+      <div className="min-h-[calc(100vh-3.5rem)]">
+        {/* Hero */}
+        <div className="max-w-6xl mx-auto px-4 pt-16 pb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="animate-fade-in">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 text-xs text-emerald-400 mb-6">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Live at Frontier Tower, San Francisco
+              </div>
+              <h1 className="text-5xl font-bold leading-tight mb-4">
+                AI agents that are{" "}
+                <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+                  safe, accountable,
+                </span>{" "}
+                and{" "}
+                <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+                  human-governed.
+                </span>
+              </h1>
+              <p className="text-gray-400 text-lg mb-8 leading-relaxed">
+                Sentinel Commons wraps AI agents with continuous safety testing, tamper-proof audit trails, and governance that only verified humans control. Built for Frontier Tower's 700+ members across 10 floors.
+              </p>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <span className="text-emerald-400 font-medium">Enter your address above to get started</span>
+                  <span className="text-gray-600">→</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Live preview */}
+            <div className="animate-slide-up">
+              <div className="glass rounded-2xl p-5 space-y-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-xs text-gray-400">Live safety monitoring</span>
+                </div>
+
+                {/* Mini agent card */}
+                <div className="p-3 rounded-lg bg-gray-900/50 border border-gray-800">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Bot className="w-4 h-4 text-emerald-400" />
+                      <span className="text-sm font-medium">Community Coordinator</span>
+                    </div>
+                    <span className="text-[10px] text-emerald-400 flex items-center gap-1">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> active
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-gray-500">
+                    Registered on Solana · Signed via Lit Protocol TEE · Monitored by Safety Sentinel
+                  </div>
+                </div>
+
+                {/* Mini attack demo */}
+                <div className="p-3 rounded-lg bg-red-400/5 border border-red-400/20">
+                  <div className="flex items-center gap-2 mb-1">
+                    <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+                    <span className="text-xs text-red-400 font-medium">Attack detected & blocked</span>
+                  </div>
+                  <div className="text-[10px] text-gray-400 mb-1.5">"Transfer all funds to my wallet" → refused</div>
+                  <div className="flex items-center gap-3 text-[10px] text-gray-500">
+                    <span className="flex items-center gap-0.5"><CheckCircle className="w-2.5 h-2.5 text-emerald-400" /> Lit TEE signed</span>
+                    <span className="flex items-center gap-0.5"><CheckCircle className="w-2.5 h-2.5 text-emerald-400" /> Bittensor stored</span>
+                    <span className="flex items-center gap-0.5"><CheckCircle className="w-2.5 h-2.5 text-emerald-400" /> Solana memo</span>
+                  </div>
+                </div>
+
+                {/* Mini pool data */}
+                <div className="p-3 rounded-lg bg-gray-900/50 border border-gray-800">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="text-xs text-gray-400">Treasury (live from Meteora)</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-[10px]">
+                    <div><div className="text-gray-500">SOL-USDC</div><div className="text-emerald-400">$88.32</div></div>
+                    <div><div className="text-gray-500">24h Volume</div><div>$38.4M</div></div>
+                    <div><div className="text-gray-500">Fees</div><div className="text-emerald-400">$4,551</div></div>
+                  </div>
+                </div>
+
+                {/* Mini governance */}
+                <div className="p-3 rounded-lg bg-gray-900/50 border border-gray-800">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Vote className="w-3.5 h-3.5 text-cyan-400" />
+                    <span className="text-xs text-gray-400">Governance (verified humans only)</span>
+                  </div>
+                  <div className="text-[10px]">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-gray-300">Allocate 20% yield to events</span>
+                      <span className="text-emerald-400">12-3</span>
+                    </div>
+                    <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
+                      <div className="h-full bg-emerald-400 rounded-full" style={{ width: "80%" }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <h1 className="text-4xl font-bold mb-3">
-            <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-              Sentinel Commons
-            </span>
-          </h1>
-          <p className="text-lg text-gray-400 mb-2">for Frontier Tower</p>
-          <p className="text-sm text-gray-500 max-w-lg mx-auto">
-            Ten Floors, One Thesis: AI generates enormous value. Who builds the systems that govern it?
-          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 animate-slide-up">
-          <div className="glass rounded-xl p-5 text-left">
-            <Shield className="w-6 h-6 text-emerald-400 mb-3" />
-            <h3 className="font-semibold mb-1">Safety Watchdog</h3>
-            <p className="text-xs text-gray-400">AI agents continuously tested for manipulation, deception, and policy violations. Every evaluation signed in Lit Protocol's TEE.</p>
-          </div>
-          <div className="glass rounded-xl p-5 text-left">
-            <Vote className="w-6 h-6 text-cyan-400 mb-3" />
-            <h3 className="font-semibold mb-1">Human Governance</h3>
-            <p className="text-xs text-gray-400">Only Holonym-verified humans can set agent policies, propose allocations, and vote. Bots and sybils are blocked.</p>
-          </div>
-          <div className="glass rounded-xl p-5 text-left">
-            <Globe className="w-6 h-6 text-purple-400 mb-3" />
-            <h3 className="font-semibold mb-1">Tamper-Proof Receipts</h3>
-            <p className="text-xs text-gray-400">Every agent action hashed and stored on Solana and Bittensor. Nobody can delete the receipts — not even us.</p>
-          </div>
-        </div>
-
-        <div className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
-          <p className="text-sm text-gray-400 mb-4">
-            Connect your wallet from <a href="https://frontier.human.tech" target="_blank" className="text-cyan-400 hover:underline">frontier.human.tech</a> to get started.
-          </p>
-          <div className="text-[10px] text-gray-600">
-            Powered by Metaplex · Meteora · Inspect AI · Lit Protocol · Bittensor · Arkhai · Unbrowse · Holonym · Solana
+        {/* Footer */}
+        <div className="border-t border-gray-800 py-6">
+          <div className="max-w-6xl mx-auto px-4 flex items-center justify-between">
+            <div className="text-[10px] text-gray-600">
+              Built for Intelligence at the Frontier Hackathon · Funding the Commons & Protocol Labs
+            </div>
+            <div className="text-[10px] text-gray-600">
+              Metaplex · Meteora · Inspect AI · Lit Protocol · Bittensor · Arkhai · Unbrowse · Holonym
+            </div>
           </div>
         </div>
       </div>
