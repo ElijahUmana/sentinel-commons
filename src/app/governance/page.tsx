@@ -19,7 +19,8 @@ interface Proposal {
 }
 
 export default function GovernancePage() {
-  const { address, isVerified, isLoading: authLoading, floor } = useAuth();
+  const { address, isVerified, isLoading: authLoading, floor, role } = useAuth();
+  const isLead = role === "lead";
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNewProposal, setShowNewProposal] = useState(false);
@@ -130,9 +131,9 @@ export default function GovernancePage() {
             {floor ? `Floor ${floor} Governance` : "Community Governance"}
           </h1>
           <p className="text-gray-400 text-sm">
-            {floor
-              ? `${floorName} — proposals and voting for your floor. Only verified humans can participate.`
-              : "Frontier Tower — only verified humans can propose and vote. Agents execute — humans decide."}
+            {isLead
+              ? `${floorName} — manage proposals, agent rules, and budget allocation for your floor.`
+              : `${floorName || "Frontier Tower"} — view proposals and floor activity. Floor leads manage governance.`}
           </p>
         </div>
         {floor && (
@@ -168,9 +169,9 @@ export default function GovernancePage() {
           <div className="flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-yellow-400 shrink-0" />
             <div>
-              <div className="text-sm font-medium text-yellow-400">Humanity Not Verified</div>
+              <div className="text-sm font-medium text-yellow-400">Verification Required</div>
               <div className="text-xs text-gray-400">
-                Your address ({address.slice(0, 6)}...{address.slice(-4)}) does not have a Holonym SBT on Optimism.{" "}
+                {isLead ? "Floor leads must verify humanity to manage governance. " : "Verify to interact with governance. "}
                 <a href="https://frontier.human.tech" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">
                   Verify at frontier.human.tech
                 </a>
@@ -186,7 +187,7 @@ export default function GovernancePage() {
             <div className="flex items-center gap-3">
               <CheckCircle className="w-5 h-5 text-emerald-400" />
               <div>
-                <div className="text-sm font-medium text-emerald-400">Verified Human</div>
+                <div className="text-sm font-medium text-emerald-400">{isLead ? "Verified Floor Lead" : "Verified Member"}</div>
                 <div className="text-xs text-gray-400">
                   {address.slice(0, 6)}...{address.slice(-4)} — Holonym V3 SBT on Optimism
                 </div>
@@ -238,8 +239,8 @@ export default function GovernancePage() {
       </div>
 
       {activeTab === "proposals" && (<>
-      {/* New proposal */}
-      {isVerified && (
+      {/* New proposal — leads only */}
+      {isLead && isVerified && (
         <div className="mb-6">
           {!showNewProposal ? (
             <button
@@ -313,7 +314,7 @@ export default function GovernancePage() {
         </div>
       ) : proposals.length === 0 ? (
         <div className="text-center py-12 text-gray-500 text-sm">
-          No proposals yet.{isVerified ? " Be the first to propose!" : ""}
+          No proposals yet.{isLead ? " Create one above." : " Ask your floor lead to create proposals."}
         </div>
       ) : (
         <div className="space-y-4">
@@ -368,34 +369,34 @@ export default function GovernancePage() {
                   </div>
                 </div>
 
-                {/* Vote buttons */}
-                {proposal.status === "active" && isVerified && !voted && (
+                {/* Lead: approve/reject buttons */}
+                {proposal.status === "active" && isLead && isVerified && (
                   <div className="flex gap-2 mt-3">
                     <button
                       onClick={() => vote(proposal.id, "for")}
                       disabled={votingOn === proposal.id}
                       className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-emerald-400/10 border border-emerald-400/20 text-emerald-400 hover:bg-emerald-400/20 transition-colors disabled:opacity-50"
                     >
-                      {votingOn === proposal.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Vote className="w-3 h-3" />}
-                      Vote For
+                      {votingOn === proposal.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3" />}
+                      Approve
                     </button>
                     <button
                       onClick={() => vote(proposal.id, "against")}
                       disabled={votingOn === proposal.id}
                       className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-red-400/10 border border-red-400/20 text-red-400 hover:bg-red-400/20 transition-colors disabled:opacity-50"
                     >
-                      <XCircle className="w-3 h-3" /> Against
+                      <XCircle className="w-3 h-3" /> Reject
                     </button>
                   </div>
                 )}
-                {proposal.status === "active" && voted && (
-                  <div className="mt-3 text-xs text-emerald-400 flex items-center gap-1">
-                    <CheckCircle className="w-3 h-3" /> You voted
+                {proposal.status === "active" && !isLead && (
+                  <div className="mt-3 text-[10px] text-gray-500">
+                    Floor lead manages proposals. Chat with the agent to suggest ideas.
                   </div>
                 )}
-                {proposal.status === "active" && !isVerified && (
-                  <div className="mt-3 text-xs text-gray-500">
-                    {address ? "Verify your humanity to vote" : "Connect wallet to vote"}
+                {proposal.status === "active" && isLead && voted && (
+                  <div className="mt-3 text-xs text-emerald-400 flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" /> Decision recorded
                   </div>
                 )}
               </div>
@@ -415,7 +416,7 @@ export default function GovernancePage() {
               <Lock className="w-5 h-5 text-purple-400" />
               Agent Rules
             </h2>
-            <p className="text-xs text-gray-500">Behavioral constraints that the agent MUST follow. Set by verified humans.</p>
+            <p className="text-xs text-gray-500">Behavioral constraints that the agent MUST follow. {isLead ? "You can add new rules." : "Set by floor leads."}</p>
           </div>
         </div>
 
@@ -433,7 +434,7 @@ export default function GovernancePage() {
           ))}
         </div>
 
-        {isVerified && (
+        {isLead && isVerified && (
           <div className="glass rounded-xl p-4">
             <div className="flex gap-2">
               <input
