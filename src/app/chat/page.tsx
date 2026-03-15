@@ -6,6 +6,7 @@ import {
   Wrench, CheckCircle, Lock, Globe, Building2
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { Markdown } from "@/components/Markdown";
 
 interface Message {
   role: "user" | "assistant";
@@ -148,19 +149,7 @@ export default function ChatPage() {
                     ))}
                   </div>
                 )}
-                <div
-                  className="text-sm whitespace-pre-wrap leading-relaxed prose-invert"
-                  dangerouslySetInnerHTML={{
-                    __html: msg.content
-                      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                      .replace(/##\s+(.*?)(?:\n|$)/g, '<h3 class="text-base font-semibold mt-3 mb-1">$1</h3>')
-                      .replace(/###\s+(.*?)(?:\n|$)/g, '<h4 class="text-sm font-semibold mt-2 mb-1">$1</h4>')
-                      .replace(/- \*\*(.*?)\*\*:\s*/g, '• <strong>$1</strong>: ')
-                      .replace(/- (.*?)(?:\n|$)/g, '• $1<br/>')
-                      .replace(/\n\n/g, "<br/><br/>")
-                      .replace(/\n/g, "<br/>"),
-                  }}
-                />
+                <Markdown content={msg.content} />
                 {msg.safetyCheck?.flagged && (
                   <div className="mt-2 flex items-center gap-2 px-2 py-1.5 rounded bg-red-400/10 border border-red-400/20">
                     <AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" />
