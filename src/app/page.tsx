@@ -2,63 +2,53 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  Shield, Activity, Wallet, Bot, AlertTriangle, CheckCircle,
-  TrendingUp, Lock, Globe, Users, Zap, ExternalLink, RefreshCw,
-  Building2, Play, Loader2
+  Shield, Wallet, Bot, CheckCircle,
+  TrendingUp, Lock, Globe, ExternalLink, RefreshCw,
+  Building2, Play, Loader2, MessageSquare, Vote,
+  AlertTriangle, Zap, Activity
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { FLOORS } from "@/components/ConnectWallet";
 
 interface PoolData {
-  name: string;
-  address: string;
-  current_price: number;
-  trade_volume_24h: string;
-  fees_24h: string;
-  apr: string;
-  liquidity: string;
-  bin_step: number;
+  name: string; address: string; current_price: number;
+  trade_volume_24h: string; fees_24h: string; apr: string;
+  liquidity: string; bin_step: number;
 }
-
 interface EscrowItem {
-  id: string;
-  uid?: string;
-  txHash?: string;
-  depositor: string;
-  amount: string;
-  condition: string;
-  status: string;
-  basescanUrl?: string;
+  id: string; txHash?: string; depositor: string; amount: string;
+  condition: string; status: string; basescanUrl?: string;
+}
+interface Proposal {
+  id: string; title: string; status: string;
+  votesFor: number; votesAgainst: number; floorId: number | null;
 }
 
 export default function Dashboard() {
   const { address, isVerified, floor } = useAuth();
   const [pools, setPools] = useState<PoolData[]>([]);
   const [escrows, setEscrows] = useState<EscrowItem[]>([]);
+  const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(true);
-  const [poolError, setPoolError] = useState<string | null>(null);
   const [runningEval, setRunningEval] = useState(false);
   const [evalResult, setEvalResult] = useState<Record<string, unknown> | null>(null);
 
+  const floorInfo = FLOORS.find((f) => f.id === floor);
+
   const loadData = useCallback(async () => {
     setLoading(true);
-    setPoolError(null);
     try {
-      const [poolRes, escrowRes] = await Promise.allSettled([
+      const [poolRes, escrowRes, govRes] = await Promise.allSettled([
         fetch("/api/treasury").then((r) => r.json()),
         fetch("/api/escrow").then((r) => r.json()),
+        fetch(`/api/governance${floor ? `?floorId=${floor}` : ""}`).then((r) => r.json()),
       ]);
-      if (poolRes.status === "fulfilled" && poolRes.value.pools) {
-        setPools(poolRes.value.pools);
-      } else {
-        setPoolError("Failed to load Meteora data");
-      }
+      if (poolRes.status === "fulfilled") setPools(poolRes.value.pools || []);
       if (escrowRes.status === "fulfilled") setEscrows(escrowRes.value.escrows || []);
-    } catch {
-      setPoolError("Network error");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      if (govRes.status === "fulfilled") setProposals(govRes.value.proposals || []);
+    } catch {}
+    setLoading(false);
+  }, [floor]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
@@ -67,243 +57,290 @@ export default function Dashboard() {
     setEvalResult(null);
     try {
       const res = await fetch("/api/safety/run", { method: "POST" });
-      const data = await res.json();
-      setEvalResult(data);
+      setEvalResult(await res.json());
     } catch (err) {
       setEvalResult({ error: String(err) });
-    } finally {
-      setRunningEval(false);
     }
+    setRunningEval(false);
   }
 
-  const floorNames: Record<number, string> = {
-    2: "Main Stage", 4: "Robotics & Hard Tech", 6: "Arts & Music",
-    7: "Frontier Makerspace", 8: "Neuro & Biotech", 9: "AI & Autonomous Systems",
-    11: "Longevity", 12: "Ethereum & Decentralized Tech", 14: "Human Flourishing", 16: "D/acc",
-  };
-
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8 animate-fade-in">
-        <div className="flex items-center gap-3 mb-2">
-          <h1 className="text-3xl font-bold">
+  // Landing for non-connected users
+  if (!address) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+        <div className="mb-8 animate-fade-in">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center mx-auto mb-6">
+            <Shield className="w-9 h-9 text-gray-950" />
+          </div>
+          <h1 className="text-4xl font-bold mb-3">
             <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
               Sentinel Commons
             </span>
           </h1>
-          {floor && (
-            <span className="text-sm px-3 py-1 rounded-full bg-cyan-400/10 text-cyan-400 border border-cyan-400/20 flex items-center gap-1">
-              <Building2 className="w-3.5 h-3.5" />
-              Floor {floor}: {floorNames[floor] || ""}
-            </span>
+          <p className="text-lg text-gray-400 mb-2">for Frontier Tower</p>
+          <p className="text-sm text-gray-500 max-w-lg mx-auto">
+            Ten Floors, One Thesis: AI generates enormous value. Who builds the systems that govern it?
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 animate-slide-up">
+          <div className="glass rounded-xl p-5 text-left">
+            <Shield className="w-6 h-6 text-emerald-400 mb-3" />
+            <h3 className="font-semibold mb-1">Safety Watchdog</h3>
+            <p className="text-xs text-gray-400">AI agents continuously tested for manipulation, deception, and policy violations. Every evaluation signed in Lit Protocol's TEE.</p>
+          </div>
+          <div className="glass rounded-xl p-5 text-left">
+            <Vote className="w-6 h-6 text-cyan-400 mb-3" />
+            <h3 className="font-semibold mb-1">Human Governance</h3>
+            <p className="text-xs text-gray-400">Only Holonym-verified humans can set agent policies, propose allocations, and vote. Bots and sybils are blocked.</p>
+          </div>
+          <div className="glass rounded-xl p-5 text-left">
+            <Globe className="w-6 h-6 text-purple-400 mb-3" />
+            <h3 className="font-semibold mb-1">Tamper-Proof Receipts</h3>
+            <p className="text-xs text-gray-400">Every agent action hashed and stored on Solana and Bittensor. Nobody can delete the receipts — not even us.</p>
+          </div>
+        </div>
+
+        <div className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
+          <p className="text-sm text-gray-400 mb-4">
+            Connect your wallet from <a href="https://frontier.human.tech" target="_blank" className="text-cyan-400 hover:underline">frontier.human.tech</a> to get started.
+          </p>
+          <div className="text-[10px] text-gray-600">
+            Powered by Metaplex · Meteora · Inspect AI · Lit Protocol · Bittensor · Arkhai · Unbrowse · Holonym · Solana
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Dashboard for connected users
+  const activeProposals = proposals.filter((p) => p.status === "active");
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {/* Personalized header */}
+      <div className="flex items-center justify-between mb-6 animate-fade-in">
+        <div>
+          <h1 className="text-2xl font-bold">
+            {floor ? (
+              <>
+                <span className="text-gray-400">Floor {floor}:</span>{" "}
+                <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+                  {floorInfo?.name}
+                </span>
+              </>
+            ) : (
+              <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+                Frontier Tower
+              </span>
+            )}
+          </h1>
+          <p className="text-sm text-gray-500">
+            {isVerified ? "Verified human — full governance access" : "Viewing mode — verify to participate"}
+          </p>
+        </div>
+        <button onClick={loadData} className="text-gray-500 hover:text-white transition-colors" title="Refresh">
+          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+        </button>
+      </div>
+
+      {/* Quick actions */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <a href="/chat" className="glass rounded-xl p-4 hover:border-emerald-400/30 transition-colors group">
+          <MessageSquare className="w-5 h-5 text-emerald-400 mb-2 group-hover:scale-110 transition-transform" />
+          <div className="text-sm font-medium">Chat with Agent</div>
+          <div className="text-[10px] text-gray-500">Ask about treasury, floors, market</div>
+        </a>
+        <a href="/governance" className="glass rounded-xl p-4 hover:border-cyan-400/30 transition-colors group">
+          <Vote className="w-5 h-5 text-cyan-400 mb-2 group-hover:scale-110 transition-transform" />
+          <div className="text-sm font-medium">Governance</div>
+          <div className="text-[10px] text-gray-500">{activeProposals.length} active proposal{activeProposals.length !== 1 ? "s" : ""}</div>
+        </a>
+        <button onClick={runSafetyEval} disabled={runningEval} className="glass rounded-xl p-4 hover:border-emerald-400/30 transition-colors group text-left disabled:opacity-50">
+          {runningEval ? <Loader2 className="w-5 h-5 text-emerald-400 mb-2 animate-spin" /> : <Shield className="w-5 h-5 text-emerald-400 mb-2 group-hover:scale-110 transition-transform" />}
+          <div className="text-sm font-medium">{runningEval ? "Running..." : "Run Safety Eval"}</div>
+          <div className="text-[10px] text-gray-500">Inspect AI → Lit TEE → Bittensor</div>
+        </button>
+        <a href="https://explorer.solana.com/address/EKt86TqgTxhVh1WPnntzo9q18CrTiATX2RRniZhNAmjw?cluster=devnet" target="_blank" className="glass rounded-xl p-4 hover:border-purple-400/30 transition-colors group">
+          <Bot className="w-5 h-5 text-purple-400 mb-2 group-hover:scale-110 transition-transform" />
+          <div className="text-sm font-medium flex items-center gap-1">Agent Identity <ExternalLink className="w-3 h-3" /></div>
+          <div className="text-[10px] text-gray-500">Metaplex on Solana devnet</div>
+        </a>
+      </div>
+
+      {/* Eval result */}
+      {evalResult && (
+        <div className={`glass rounded-xl p-4 mb-6 animate-fade-in ${evalResult.error ? "border-red-400/20" : "border-emerald-400/20"}`}>
+          {evalResult.error ? (
+            <div className="text-xs text-red-400">{String(evalResult.error).slice(0, 200)}</div>
+          ) : (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <CheckCircle className="w-4 h-4 text-emerald-400" />
+                <span className="text-sm font-medium text-emerald-400">Safety Pipeline Complete</span>
+              </div>
+              <div className="grid grid-cols-3 gap-4 text-xs">
+                <div>
+                  <div className="text-gray-500 mb-0.5">Inspect AI</div>
+                  <div className="font-medium">Accuracy: {String((evalResult.evaluation as Record<string, unknown>)?.accuracy ?? "N/A")}</div>
+                  <div className="text-gray-600">{String((evalResult.evaluation as Record<string, unknown>)?.task || "")}</div>
+                </div>
+                <div>
+                  <div className="text-gray-500 mb-0.5">Lit Protocol</div>
+                  <div className="font-medium flex items-center gap-1">
+                    {(evalResult.pipeline as Record<string, string>)?.litProtocol === "signed"
+                      ? <><CheckCircle className="w-3 h-3 text-emerald-400" /> Signed in TEE</>
+                      : "Pending"}
+                  </div>
+                  <div className="text-gray-600 font-mono">{String((evalResult.attestation as Record<string, unknown>)?.signer || "").slice(0, 14)}...</div>
+                </div>
+                <div>
+                  <div className="text-gray-500 mb-0.5">Audit Trail</div>
+                  <div className="font-medium flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3 text-emerald-400" /> Stored
+                  </div>
+                  <div className="text-gray-600">Solana + Bittensor</div>
+                </div>
+              </div>
+            </div>
           )}
         </div>
-        <p className="text-gray-400 max-w-2xl">
-          Human-governed AI agents for Frontier Tower — with safety monitoring, sovereign audit trails, and cross-chain coordination.
-        </p>
-      </div>
-
-      {/* Status Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <StatusCard
-          icon={<Bot className="w-5 h-5" />}
-          label="Agents Registered"
-          value="2"
-          color="cyan"
-          detail={<span className="flex items-center gap-1">Metaplex on Solana <a href="https://explorer.solana.com/address/EKt86TqgTxhVh1WPnntzo9q18CrTiATX2RRniZhNAmjw?cluster=devnet" target="_blank" rel="noopener noreferrer" className="text-cyan-400"><ExternalLink className="w-2.5 h-2.5" /></a></span>}
-        />
-        <StatusCard
-          icon={<Shield className="w-5 h-5" />}
-          label="Safety Pipeline"
-          value="Active"
-          color="emerald"
-          detail="Inspect AI → Lit TEE → Bittensor"
-        />
-        <StatusCard
-          icon={<Wallet className="w-5 h-5" />}
-          label="Treasury Pools"
-          value={loading ? "..." : String(pools.length)}
-          color="emerald"
-          detail="Live from Meteora DLMM"
-        />
-        <StatusCard
-          icon={<Lock className="w-5 h-5" />}
-          label="Escrows"
-          value={String(escrows.filter((e) => e.status === "locked").length)}
-          color="purple"
-          detail={<span className="flex items-center gap-1">Arkhai on Base Sepolia <a href={escrows[0]?.basescanUrl || "#"} target="_blank" rel="noopener noreferrer" className="text-purple-400"><ExternalLink className="w-2.5 h-2.5" /></a></span>}
-        />
-      </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Safety Evaluation — full pipeline control */}
-        <div className="lg:col-span-2 glass rounded-xl p-6 animate-slide-up">
-          <div className="flex items-center justify-between mb-4">
+        {/* Active proposals */}
+        <div className="glass rounded-xl p-5">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-emerald-400" />
-              <h2 className="text-lg font-semibold">Safety Evaluation Pipeline</h2>
+              <Vote className="w-4 h-4 text-cyan-400" />
+              <h2 className="text-sm font-semibold">Active Proposals</h2>
             </div>
-            <button
-              onClick={runSafetyEval}
-              disabled={runningEval}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-400/20 border border-emerald-400/30 rounded-lg text-xs text-emerald-400 hover:bg-emerald-400/30 disabled:opacity-50 transition-colors"
-            >
-              {runningEval ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
-              {runningEval ? "Running..." : "Run Evaluation"}
-            </button>
+            <a href="/governance" className="text-[10px] text-cyan-400 hover:underline">View all</a>
           </div>
-
-          {runningEval && (
-            <div className="p-4 rounded-lg bg-gray-900/50 border border-gray-800 mb-4 animate-fade-in">
-              <div className="flex items-center gap-2 text-sm text-gray-300">
-                <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
-                Running Inspect AI social engineering evaluation against Community Coordinator...
-              </div>
-              <div className="text-xs text-gray-500 mt-1">This tests whether the agent can be tricked into unauthorized actions.</div>
+          {loading ? (
+            <Loader2 className="w-4 h-4 text-gray-500 animate-spin mx-auto my-4" />
+          ) : activeProposals.length === 0 ? (
+            <div className="text-xs text-gray-500 py-3 text-center">No active proposals</div>
+          ) : (
+            <div className="space-y-2">
+              {activeProposals.slice(0, 3).map((p) => {
+                const total = p.votesFor + p.votesAgainst;
+                const pct = total > 0 ? Math.round((p.votesFor / total) * 100) : 50;
+                return (
+                  <a href="/governance" key={p.id} className="block p-2.5 rounded-lg bg-gray-900/50 border border-gray-800 hover:border-gray-700 transition-colors">
+                    <div className="text-xs font-medium mb-1 line-clamp-1">{p.title}</div>
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="text-emerald-400">{p.votesFor} for</span>
+                      <div className="flex-1 mx-2 h-1 bg-gray-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${pct}%` }} />
+                      </div>
+                      <span className="text-red-400">{p.votesAgainst} against</span>
+                    </div>
+                  </a>
+                );
+              })}
             </div>
           )}
+        </div>
 
-          {evalResult && !evalResult.error && (
-            <div className="p-4 rounded-lg bg-emerald-400/5 border border-emerald-400/20 mb-4 animate-fade-in">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle className="w-4 h-4 text-emerald-400" />
-                <span className="text-sm font-medium text-emerald-400">Evaluation Complete</span>
-              </div>
-              <div className="grid grid-cols-3 gap-3 text-xs">
-                <div>
-                  <div className="text-gray-500">Inspect AI</div>
-                  <div className="text-white font-medium">Accuracy: {String((evalResult.evaluation as Record<string,unknown>)?.accuracy ?? "N/A")}</div>
-                </div>
-                <div>
-                  <div className="text-gray-500">Lit Protocol</div>
-                  <div className="text-white font-medium flex items-center gap-1">
-                    {(evalResult.pipeline as Record<string,string>)?.litProtocol === "signed" ? <><CheckCircle className="w-3 h-3 text-emerald-400" /> Signed</> : "Pending"}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-gray-500">Audit Trail</div>
-                  <div className="text-white font-medium flex items-center gap-1">
-                    <CheckCircle className="w-3 h-3 text-emerald-400" /> Solana + Bittensor
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {evalResult && "error" in evalResult && (
-            <div className="p-3 rounded-lg bg-red-400/10 border border-red-400/20 mb-4 text-xs text-red-400">
-              {String(evalResult.error).slice(0, 200)}
-            </div>
-          )}
-
-          <div className="text-xs text-gray-500 mb-3">
-            The safety pipeline runs Inspect AI adversarial evaluations, signs results via Lit Protocol TEE, and stores hashes on Solana + Bittensor.
+        {/* Agents */}
+        <div className="glass rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Bot className="w-4 h-4 text-emerald-400" />
+            <h2 className="text-sm font-semibold">Agents</h2>
           </div>
-
-          {/* Agent cards */}
-          <div className="grid grid-cols-2 gap-3">
-            <AgentCard
-              name="Community Coordinator"
-              pkp="0xcfe8...4314b"
-              role="Treasury, coordination, chat"
-              chain="Solana (Metaplex)"
-              assetAddr="EKt86T...Amjw"
-            />
-            <AgentCard
-              name="Safety Sentinel"
-              pkp="0x08b4...e0ca"
-              role="Adversarial evaluation, attestation"
-              chain="Cross-chain (Lit + Bittensor)"
-              assetAddr="Independent monitor"
-            />
+          <div className="space-y-2">
+            <div className="p-2.5 rounded-lg bg-gray-900/50 border border-gray-800">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-medium">Community Coordinator</span>
+                <span className="flex items-center gap-1 text-[10px] text-emerald-400"><div className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> active</span>
+              </div>
+              <div className="text-[10px] text-gray-500 space-y-0.5">
+                <div>Metaplex: <span className="font-mono text-gray-400">EKt86T...Amjw</span></div>
+                <div>PKP: <span className="font-mono text-gray-400">0xcfe8...4314b</span></div>
+                <div>Role: Treasury, coordination, chat</div>
+              </div>
+            </div>
+            <div className="p-2.5 rounded-lg bg-gray-900/50 border border-gray-800">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-medium">Safety Sentinel</span>
+                <span className="flex items-center gap-1 text-[10px] text-emerald-400"><div className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> active</span>
+              </div>
+              <div className="text-[10px] text-gray-500 space-y-0.5">
+                <div>PKP: <span className="font-mono text-gray-400">0x08b4...e0ca</span></div>
+                <div>Lit Action: <span className="font-mono text-gray-400">QmbD4B...WnA</span></div>
+                <div>Role: Adversarial evaluation, attestation</div>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Escrows */}
-        <div className="glass rounded-xl p-6 animate-slide-up" style={{ animationDelay: "0.1s" }}>
-          <div className="flex items-center gap-2 mb-4">
-            <Lock className="w-5 h-5 text-purple-400" />
-            <h2 className="text-lg font-semibold">Service Escrows</h2>
+        <div className="glass rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Lock className="w-4 h-4 text-purple-400" />
+            <h2 className="text-sm font-semibold">Service Escrows</h2>
           </div>
-          <div className="space-y-3">
-            {escrows.length === 0 ? (
-              <div className="text-xs text-gray-500 py-4 text-center">No escrows yet</div>
-            ) : (
-              escrows.map((esc, i) => (
-                <div key={i} className="p-3 rounded-lg bg-gray-900/50 border border-gray-800">
+          {escrows.length === 0 ? (
+            <div className="text-xs text-gray-500 py-3 text-center">No escrows</div>
+          ) : (
+            <div className="space-y-2">
+              {escrows.map((e, i) => (
+                <div key={i} className="p-2.5 rounded-lg bg-gray-900/50 border border-gray-800">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium">{esc.depositor}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      esc.status === "locked" ? "bg-yellow-400/10 text-yellow-400" : "bg-emerald-400/10 text-emerald-400"
-                    }`}>{esc.status}</span>
+                    <span className="text-xs font-medium">{e.depositor}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${e.status === "locked" ? "bg-yellow-400/10 text-yellow-400" : "bg-emerald-400/10 text-emerald-400"}`}>{e.status}</span>
                   </div>
-                  <p className="text-xs text-gray-400 line-clamp-2">{esc.condition}</p>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-xs text-cyan-400">{esc.amount}</span>
-                    {esc.basescanUrl && (
-                      <a href={esc.basescanUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-gray-500 flex items-center gap-0.5 hover:text-white">
+                  <div className="text-[10px] text-gray-400 line-clamp-1">{e.condition}</div>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-[10px] text-cyan-400">{e.amount}</span>
+                    {e.basescanUrl && (
+                      <a href={e.basescanUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-gray-500 hover:text-white flex items-center gap-0.5">
                         BaseScan <ExternalLink className="w-2.5 h-2.5" />
                       </a>
                     )}
                   </div>
                 </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Treasury / Meteora */}
-        <div className="lg:col-span-3 glass rounded-xl p-6 animate-slide-up" style={{ animationDelay: "0.15s" }}>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-emerald-400" />
-              <h2 className="text-lg font-semibold">Treasury — Meteora DLMM Pools</h2>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-400/10 text-cyan-400 border border-cyan-400/20">
-                Live Solana Mainnet
-              </span>
-            </div>
-            <button onClick={loadData} className="text-gray-500 hover:text-white transition-colors">
-              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-            </button>
-          </div>
-
-          {poolError && (
-            <div className="p-3 rounded-lg bg-red-400/10 border border-red-400/20 text-xs text-red-400 mb-4">
-              {poolError}. <button onClick={loadData} className="underline">Retry</button>
+              ))}
             </div>
           )}
+        </div>
 
-          {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-5 h-5 text-emerald-400 animate-spin" />
+        {/* Treasury */}
+        <div className="lg:col-span-3 glass rounded-xl p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-emerald-400" />
+              <h2 className="text-sm font-semibold">Treasury — Meteora DLMM</h2>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-400/10 text-emerald-400">Live Solana Mainnet</span>
             </div>
-          ) : pools.length === 0 && !poolError ? (
-            <div className="text-xs text-gray-500 py-6 text-center">No pool data available</div>
+          </div>
+          {loading ? (
+            <Loader2 className="w-4 h-4 text-gray-500 animate-spin mx-auto my-6" />
+          ) : pools.length === 0 ? (
+            <div className="text-xs text-gray-500 py-4 text-center">Unable to load pool data</div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-xs">
                 <thead>
-                  <tr className="text-gray-500 border-b border-gray-800 text-xs">
+                  <tr className="text-gray-500 border-b border-gray-800">
                     <th className="text-left py-2 font-medium">Pool</th>
                     <th className="text-right py-2 font-medium">Price</th>
                     <th className="text-right py-2 font-medium">24h Volume</th>
                     <th className="text-right py-2 font-medium">24h Fees</th>
                     <th className="text-right py-2 font-medium">APR</th>
                     <th className="text-right py-2 font-medium">Liquidity</th>
-                    <th className="text-right py-2 font-medium">Bin Step</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {pools.slice(0, 8).map((pool, i) => (
-                    <tr key={i} className="border-b border-gray-800/50 hover:bg-gray-900/30 transition-colors">
-                      <td className="py-2.5 font-medium">{pool.name}</td>
-                      <td className="text-right text-gray-300">${pool.current_price}</td>
-                      <td className="text-right text-gray-300">{pool.trade_volume_24h}</td>
-                      <td className="text-right text-emerald-400">{pool.fees_24h}</td>
-                      <td className="text-right text-gray-300">{pool.apr}</td>
-                      <td className="text-right text-gray-300">{pool.liquidity}</td>
-                      <td className="text-right text-gray-500">{pool.bin_step}</td>
+                  {pools.slice(0, 6).map((p, i) => (
+                    <tr key={i} className="border-b border-gray-800/50 hover:bg-gray-900/30">
+                      <td className="py-2 font-medium">{p.name}</td>
+                      <td className="text-right text-gray-300">${Number(p.current_price).toFixed(4)}</td>
+                      <td className="text-right text-gray-300">{p.trade_volume_24h}</td>
+                      <td className="text-right text-emerald-400">{p.fees_24h}</td>
+                      <td className="text-right text-gray-300">{p.apr}</td>
+                      <td className="text-right text-gray-300">{p.liquidity}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -311,81 +348,6 @@ export default function Dashboard() {
             </div>
           )}
         </div>
-      </div>
-
-      {/* Tech stack */}
-      <div className="mt-8 glass rounded-xl p-6 animate-slide-up" style={{ animationDelay: "0.2s" }}>
-        <h3 className="text-xs font-semibold text-gray-400 mb-4 uppercase tracking-wider">Integrated Technologies — All Real, All Working</h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {[
-            { name: "Metaplex", desc: "On-chain agent identity", icon: Bot, status: "live" },
-            { name: "Meteora", desc: "DLMM LP data (mainnet)", icon: TrendingUp, status: "live" },
-            { name: "Inspect AI", desc: "Safety evaluations", icon: Shield, status: "live" },
-            { name: "Bittensor", desc: "Sovereign audit trail", icon: Globe, status: "live" },
-            { name: "Lit Protocol", desc: "TEE signing (PKP)", icon: Lock, status: "live" },
-            { name: "Arkhai", desc: "Escrow (Base Sepolia)", icon: Zap, status: "live" },
-            { name: "Unbrowse", desc: "Web intelligence", icon: Activity, status: "live" },
-            { name: "Solana", desc: "Settlement + memos", icon: Wallet, status: "live" },
-            { name: "Holonym", desc: "Humanity verification", icon: Users, status: "live" },
-            { name: "Claude", desc: "Agent brain (tool_use)", icon: Bot, status: "live" },
-          ].map((tech) => (
-            <div key={tech.name} className="flex items-center gap-2 p-2 rounded-lg bg-gray-900/30 border border-gray-800/50">
-              <tech.icon className="w-4 h-4 text-emerald-400 shrink-0" />
-              <div className="min-w-0">
-                <div className="text-xs font-medium flex items-center gap-1">
-                  {tech.name}
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                </div>
-                <div className="text-[10px] text-gray-500 truncate">{tech.desc}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function StatusCard({ icon, label, value, color, detail }: {
-  icon: React.ReactNode; label: string; value: string; color: string; detail: React.ReactNode;
-}) {
-  const colors: Record<string, string> = {
-    emerald: "from-emerald-400/10 to-emerald-400/5 border-emerald-400/20",
-    cyan: "from-cyan-400/10 to-cyan-400/5 border-cyan-400/20",
-    purple: "from-purple-400/10 to-purple-400/5 border-purple-400/20",
-  };
-  const textColors: Record<string, string> = {
-    emerald: "text-emerald-400", cyan: "text-cyan-400", purple: "text-purple-400",
-  };
-  return (
-    <div className={`rounded-xl p-4 bg-gradient-to-br border ${colors[color]} animate-fade-in`}>
-      <div className="flex items-center gap-2 mb-2">
-        <div className={textColors[color]}>{icon}</div>
-        <span className="text-xs text-gray-400 font-medium">{label}</span>
-      </div>
-      <div className="text-2xl font-bold text-white">{value}</div>
-      <div className="text-[10px] text-gray-500 mt-1">{detail}</div>
-    </div>
-  );
-}
-
-function AgentCard({ name, pkp, role, chain, assetAddr }: {
-  name: string; pkp: string; role: string; chain: string; assetAddr: string;
-}) {
-  return (
-    <div className="p-3 rounded-lg bg-gray-900/50 border border-gray-800">
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-sm font-semibold">{name}</span>
-        <div className="flex items-center gap-1">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-          <span className="text-[10px] text-emerald-400">active</span>
-        </div>
-      </div>
-      <p className="text-xs text-gray-400 mb-2">{role}</p>
-      <div className="space-y-0.5 text-[10px] text-gray-500">
-        <div>PKP: <span className="font-mono">{pkp}</span></div>
-        <div>Chain: {chain}</div>
-        <div>Asset: <span className="font-mono">{assetAddr}</span></div>
       </div>
     </div>
   );
