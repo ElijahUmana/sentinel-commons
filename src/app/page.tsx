@@ -25,6 +25,7 @@ export default function Home() {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [escrows, setEscrows] = useState<EscrowItem[]>([]);
   const [activities, setActivities] = useState<{ id: string; type: string; action: string; detail: string; timestamp: string; verified?: boolean }[]>([]);
+  const [budget, setBudget] = useState<{ total: number; spent: number; remaining: number; transactions: { id: string; type: string; category: string; description: string; amount: number; approvedBy?: string; timestamp: string }[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [attackInput, setAttackInput] = useState("");
   const [attackResult, setAttackResult] = useState<{
@@ -41,14 +42,16 @@ export default function Home() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    const [e, g, a] = await Promise.allSettled([
+    const [e, g, a, b] = await Promise.allSettled([
       fetch("/api/escrow").then(r => r.json()),
       fetch(`/api/governance${floor ? `?floorId=${floor}` : ""}`).then(r => r.json()),
       fetch(`/api/activity${floor ? `?floorId=${floor}` : ""}`).then(r => r.json()),
+      floor ? fetch(`/api/budget?floorId=${floor}`).then(r => r.json()) : Promise.resolve(null),
     ]);
     if (e.status === "fulfilled") setEscrows(e.value.escrows || []);
     if (g.status === "fulfilled") setProposals(g.value.proposals || []);
     if (a.status === "fulfilled") setActivities(a.value.activities || []);
+    if (b.status === "fulfilled" && b.value) setBudget(b.value);
     setLoading(false);
   }, [floor]);
 
@@ -396,7 +399,7 @@ export default function Home() {
       )}
 
       {/* Budget management — floor leads only */}
-      {role === "lead" && floorInfo && (
+      {role === "lead" && budget && (
         <div className="glass rounded-xl p-5 mb-5 animate-slide-up" style={{animationDelay:"0.1s"}}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -407,26 +410,33 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-3 gap-3 mb-3">
             <div className="p-3 rounded-lg bg-gray-900/50 border border-gray-800 text-center">
-              <div className="text-lg font-bold text-white">${floorInfo.budget.total.toLocaleString()}</div>
+              <div className="text-lg font-bold text-white">${budget.total.toLocaleString()}</div>
               <div className="text-[10px] text-gray-500">Total Budget</div>
             </div>
             <div className="p-3 rounded-lg bg-gray-900/50 border border-gray-800 text-center">
-              <div className="text-lg font-bold text-emerald-400">${(floorInfo.budget.total - floorInfo.budget.spent).toLocaleString()}</div>
+              <div className="text-lg font-bold text-emerald-400">${budget.remaining.toLocaleString()}</div>
               <div className="text-[10px] text-gray-500">Remaining</div>
             </div>
             <div className="p-3 rounded-lg bg-gray-900/50 border border-gray-800 text-center">
-              <div className="text-lg font-bold text-gray-300">${floorInfo.budget.spent.toLocaleString()}</div>
+              <div className="text-lg font-bold text-gray-300">${budget.spent.toLocaleString()}</div>
               <div className="text-[10px] text-gray-500">Spent</div>
             </div>
           </div>
           <div className="text-xs text-gray-500 mb-2">Recent transactions:</div>
           <div className="space-y-1.5 text-xs">
-            <div className="flex justify-between p-2 rounded bg-gray-900/30"><span className="text-gray-400">AI Safety Reading Group (approved)</span><span className="text-red-400">-$200</span></div>
-            <div className="flex justify-between p-2 rounded bg-gray-900/30"><span className="text-gray-400">Meteora LP yield earned</span><span className="text-emerald-400">+$450</span></div>
-            <div className="flex justify-between p-2 rounded bg-gray-900/30"><span className="text-gray-400">Equipment maintenance</span><span className="text-red-400">-$150</span></div>
-            <div className="flex justify-between p-2 rounded bg-gray-900/30"><span className="text-gray-400">Bounty: Set up monitoring dashboard</span><span className="text-red-400">-$150</span></div>
+            {budget.transactions.slice(0, 5).map((tx) => (
+              <div key={tx.id} className="flex items-center justify-between p-2 rounded bg-gray-900/30">
+                <div>
+                  <span className="text-gray-400">{tx.description}</span>
+                  {tx.approvedBy && <span className="text-[10px] text-gray-600 ml-2">({tx.approvedBy})</span>}
+                </div>
+                <span className={tx.type === "income" ? "text-emerald-400" : "text-red-400"}>
+                  {tx.type === "income" ? "+" : "-"}${tx.amount.toLocaleString()}
+                </span>
+              </div>
+            ))}
           </div>
-          <div className="text-[10px] text-gray-600 mt-2">Managed by AI agent · All transactions require governance approval · Audit trail on Solana + Bittensor</div>
+          <div className="text-[10px] text-gray-600 mt-2">Managed by AI agent · All expenses require governance approval · Audit trail on Solana + Bittensor</div>
         </div>
       )}
 
