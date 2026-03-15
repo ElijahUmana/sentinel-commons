@@ -293,41 +293,55 @@ export default function Home() {
         </div>
       </div>
 
-      {/* What the agent manages for this floor */}
-      <div className="glass rounded-xl p-5 mb-5 animate-slide-up">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Bot className="w-5 h-5 text-emerald-400" />
-            <span className="font-semibold">Your Floor's AI Agent</span>
+      {/* ═══ MEMBER DASHBOARD ═══ */}
+      {role === "member" && (<>
+        {/* Chat CTA — the primary thing members do */}
+        <a href="/chat" className="block glass rounded-xl p-5 mb-4 hover:border-emerald-400/30 transition-colors group animate-slide-up">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-emerald-400/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <MessageSquare className="w-6 h-6 text-emerald-400" />
+            </div>
+            <div>
+              <div className="text-lg font-semibold">Talk to your floor's AI agent</div>
+              <div className="text-xs text-gray-400">Find resources, ask questions, get help coordinating across floors</div>
+            </div>
+            <ArrowRight className="w-5 h-5 text-gray-600 group-hover:text-emerald-400 ml-auto transition-colors" />
           </div>
-          <a href="/chat" className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-400/20 border border-emerald-400/30 rounded-lg text-xs text-emerald-400 hover:bg-emerald-400/30 transition-colors">
-            <MessageSquare className="w-3.5 h-3.5" /> Talk to Agent
-          </a>
-        </div>
-        <p className="text-xs text-gray-400 mb-3">
-          This agent manages Floor {floor}'s ${floorInfo?.budget.total.toLocaleString()} budget, {floorInfo?.bounties.length} bounties, {floorInfo?.resources.length} resources, and {floorInfo?.memberCount} members.
-          It acts autonomously within rules set by verified humans. Three layers keep it trustworthy:
-        </p>
-        <div className="grid grid-cols-3 gap-2 text-[10px]">
-          <div className="p-2 rounded-lg bg-emerald-400/5 border border-emerald-400/20 text-center">
-            <Shield className="w-4 h-4 text-emerald-400 mx-auto mb-0.5" />
-            <div className="font-medium text-emerald-400">Safety Tested</div>
-            <div className="text-gray-500">Continuously attacked to find weaknesses</div>
-          </div>
-          <div className="p-2 rounded-lg bg-cyan-400/5 border border-cyan-400/20 text-center">
-            <Users className="w-4 h-4 text-cyan-400 mx-auto mb-0.5" />
-            <div className="font-medium text-cyan-400">Human Governed</div>
-            <div className="text-gray-500">Rules set by verified humans only</div>
-          </div>
-          <div className="p-2 rounded-lg bg-purple-400/5 border border-purple-400/20 text-center">
-            <Lock className="w-4 h-4 text-purple-400 mx-auto mb-0.5" />
-            <div className="font-medium text-purple-400">Tamper-Proof</div>
-            <div className="text-gray-500">Every action signed & stored immutably</div>
-          </div>
-        </div>
-      </div>
+        </a>
+      </>)}
 
-      {/* === THE THREE LAYERS — the narrative === */}
+      {/* ═══ LEAD DASHBOARD ═══ */}
+      {role === "lead" && (<>
+        {/* Agent card with three-layer summary */}
+        <div className="glass rounded-xl p-5 mb-5 animate-slide-up">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Bot className="w-5 h-5 text-emerald-400" />
+              <span className="font-semibold">Your Floor's AI Agent</span>
+            </div>
+            <a href="/chat" className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-400/20 border border-emerald-400/30 rounded-lg text-xs text-emerald-400 hover:bg-emerald-400/30 transition-colors">
+              <MessageSquare className="w-3.5 h-3.5" /> Talk to Agent
+            </a>
+          </div>
+          <p className="text-xs text-gray-400 mb-3">
+            Manages Floor {floor}'s ${floorInfo?.budget.total.toLocaleString()} budget, {floorInfo?.bounties.length} bounties, {floorInfo?.resources.length} resources. Three layers keep it trustworthy:
+          </p>
+          <div className="grid grid-cols-3 gap-2 text-[10px]">
+            <div className="p-2 rounded-lg bg-emerald-400/5 border border-emerald-400/20 text-center">
+              <div className="font-medium text-emerald-400">Safety Tested</div>
+            </div>
+            <div className="p-2 rounded-lg bg-cyan-400/5 border border-cyan-400/20 text-center">
+              <div className="font-medium text-cyan-400">Human Governed</div>
+            </div>
+            <div className="p-2 rounded-lg bg-purple-400/5 border border-purple-400/20 text-center">
+              <div className="font-medium text-purple-400">Tamper-Proof</div>
+            </div>
+          </div>
+        </div>
+      </>)}
+
+      {/* === THE THREE LAYERS — LEADS ONLY === */}
+      {role === "lead" && (<>
 
       {/* LAYER 1: SAFETY — Can you trick this agent? */}
       <div className="glass rounded-xl p-5 mb-4 border-l-2 border-l-emerald-400/50">
@@ -480,6 +494,9 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      </>)}
+      {/* END LEAD-ONLY LAYERS */}
 
       {/* AGENT ACTIVITY — what the agent has been doing */}
       <button onClick={() => setShowActivity(!showActivity)} className="w-full glass rounded-xl flex items-center justify-between p-4 hover:bg-gray-900/30 transition-colors mb-4">

@@ -98,7 +98,7 @@ export function getBuildingData(): BuildingData {
         resources: ["EEG Equipment", "Microscopes", "Bio-sample Prep Area", "Research Library"],
         currentEvents: [],
         budget: { total: 6000, spent: 3400, currency: "USDC" },
-        bounties: [],
+        bounties: [{ title: "Calibrate EEG equipment for new experiment", amount: "200 USDC", status: "open" }, { title: "Organize research paper review session", amount: "100 USDC", status: "open" }],
       },
       {
         id: 9,
@@ -118,7 +118,7 @@ export function getBuildingData(): BuildingData {
         resources: ["Biomarker Testing Equipment", "Cold Plunge", "Research Library", "Meeting Rooms"],
         currentEvents: [],
         budget: { total: 3500, spent: 900, currency: "USDC" },
-        bounties: [],
+        bounties: [{ title: "Set up biomarker tracking dashboard", amount: "150 USDC", status: "open" }],
       },
       {
         id: 12,
