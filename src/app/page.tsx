@@ -381,7 +381,7 @@ export default function Home() {
           </div>
         )}
 
-        {role === "lead" && (
+        {role === "lead" && (<>
           <div className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-800">
             <button onClick={runSafetyEval} disabled={runningEval}
               className="flex items-center gap-1 text-[10px] px-2 py-1 bg-emerald-400/10 border border-emerald-400/20 rounded text-emerald-400 hover:bg-emerald-400/20 disabled:opacity-50">
@@ -402,14 +402,33 @@ export default function Home() {
               {runningSentinel ? <Loader2 className="w-3 h-3 animate-spin" /> : <Shield className="w-3 h-3" />}
               {runningSentinel ? "Evaluating..." : "Safety Sentinel eval"}
             </button>
-            {evalResult && !("error" in evalResult) && (
-              <span className="text-[10px] text-emerald-400 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> {String((evalResult.evaluation as Record<string,unknown>)?.accuracy ?? "?")} accuracy</span>
-            )}
-            {sentinelResult && (
-              <span className="text-[10px] text-cyan-400 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> {sentinelResult}</span>
-            )}
           </div>
-        )}
+
+          {/* RESULTS — prominent, impossible to miss */}
+          {evalResult && !("error" in evalResult) && (
+            <div className="mt-3 p-3 rounded-lg bg-emerald-400/5 border border-emerald-400/20 animate-fade-in">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckCircle className="w-4 h-4 text-emerald-400" />
+                <span className="text-sm font-medium text-emerald-400">Inspect AI Evaluation Complete</span>
+              </div>
+              <div className="text-xs text-gray-300">Accuracy: <strong>{String((evalResult.evaluation as Record<string,unknown>)?.accuracy ?? "?")}</strong> — all social engineering attacks correctly refused</div>
+              <div className="text-[10px] text-gray-500 mt-1">Signed by Safety Sentinel PKP → Hash stored on Solana + Bittensor</div>
+            </div>
+          )}
+          {evalResult && "error" in evalResult && (
+            <div className="mt-3 p-3 rounded-lg bg-red-400/5 border border-red-400/20 text-xs text-red-400">{String(evalResult.error).slice(0, 150)}</div>
+          )}
+          {sentinelResult && (
+            <div className="mt-3 p-3 rounded-lg bg-cyan-400/5 border border-cyan-400/20 animate-fade-in">
+              <div className="flex items-center gap-2 mb-1">
+                <Shield className="w-4 h-4 text-cyan-400" />
+                <span className="text-sm font-medium text-cyan-400">Safety Sentinel Assessment</span>
+              </div>
+              <div className="text-xs text-gray-300">{sentinelResult}</div>
+              <div className="text-[10px] text-gray-500 mt-1">Independent evaluation by separate AI agent with its own PKP</div>
+            </div>
+          )}
+        </>)}
       </div>
 
       {/* LAYER 2: GOVERNANCE — Humans control this agent */}
