@@ -29,8 +29,10 @@ def store_hash_on_bittensor(evaluation_data: dict) -> dict:
     try:
         import bittensor as bt
 
-        # Connect to testnet
-        subtensor = bt.Subtensor(network="test")
+        # Connect to Bittensor (local chain or testnet)
+        import os
+        bt_network = os.environ.get("BITTENSOR_NETWORK", "ws://127.0.0.1:9944")
+        subtensor = bt.Subtensor(network=bt_network)
         wallet = bt.Wallet(name="sentinel")
 
         # Submit hash as system.remark extrinsic

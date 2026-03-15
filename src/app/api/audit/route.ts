@@ -55,8 +55,9 @@ async function storeOnBittensor(evaluationData: Record<string, unknown>): Promis
     const scriptPath = path.join(process.cwd(), "safety", "bittensor_audit.py");
     const dataArg = JSON.stringify(evaluationData).replace(/'/g, "'\\''");
 
+    const btNetwork = process.env.BITTENSOR_NETWORK || "ws://127.0.0.1:9944";
     const { stdout } = await execAsync(
-      `${venvPython} ${scriptPath} '${dataArg}'`,
+      `BITTENSOR_NETWORK="${btNetwork}" ${venvPython} ${scriptPath} '${dataArg}'`,
       { timeout: 60000 }
     );
     return JSON.parse(stdout.trim());
