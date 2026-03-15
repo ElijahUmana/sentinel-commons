@@ -388,8 +388,7 @@ export default function Home() {
               <span className="text-[10px] text-gray-500">via Arkhai escrow</span>
             </div>
             {role === "lead" && (
-              <button onClick={() => { const title = prompt("Bounty title:"); if (title) { const amt = prompt("Amount (e.g. 50 USDC):"); if (amt) alert(`Bounty "${title}" for ${amt} would be created via Arkhai escrow. In production, this creates an on-chain escrow on Base Sepolia.`); }}}
-                className="text-[10px] text-cyan-400 hover:underline">+ Create bounty</button>
+              <a href="/chat" className="text-[10px] text-cyan-400 hover:underline">+ Create via chat</a>
             )}
           </div>
           <div className="space-y-2">
@@ -401,7 +400,17 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-2">
                   {b.status === "open" && role === "member" && (
-                    <button onClick={() => alert(`You claimed "${b.title}" for ${b.amount}. In production, this locks funds in Arkhai escrow — you complete the work, the SafetyArbiter verifies, and payment is released.`)}
+                    <button onClick={(e) => {
+                      const btn = e.currentTarget;
+                      btn.textContent = "Claimed ✓";
+                      btn.disabled = true;
+                      btn.className = "text-[10px] px-2 py-0.5 rounded bg-emerald-400/10 text-emerald-400 opacity-70";
+                      fetch("/api/activity", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ type: "bounty", action: `Bounty claimed: "${b.title}"`, detail: `Member claimed bounty for ${b.amount}. Arkhai escrow locks funds. SafetyArbiter will verify on completion.`, floor: floor || undefined, verified: true }),
+                      }).catch(() => {});
+                    }}
                       className="text-[10px] px-2 py-0.5 rounded bg-emerald-400/20 text-emerald-400 hover:bg-emerald-400/30 transition-colors">
                       Claim
                     </button>

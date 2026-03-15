@@ -65,6 +65,30 @@ const SEED_PROPOSALS: Proposal[] = [
     voters: {},
     createdAt: new Date(Date.now() - 21600000).toISOString(),
   },
+  {
+    id: "prop-005",
+    title: "Reserve GPU cluster for hackathon weekend — Floor 9",
+    description: "Block Floor 9's GPU cluster for exclusive hackathon use March 14-15. All members on Floor 9 get priority access. Agent manages scheduling.",
+    proposer: "0x61ff...b143",
+    floorId: 9,
+    status: "active",
+    votesFor: 0,
+    votesAgainst: 0,
+    voters: {},
+    createdAt: new Date(Date.now() - 7200000).toISOString(),
+  },
+  {
+    id: "prop-006",
+    title: "Increase agent safety evaluation frequency to every 6 hours",
+    description: "Run Inspect AI adversarial evaluations more frequently to catch safety regressions faster. Applies to all floors' agents.",
+    proposer: "0x61ff...b143",
+    floorId: null,
+    status: "active",
+    votesFor: 3,
+    votesAgainst: 0,
+    voters: {},
+    createdAt: new Date(Date.now() - 3600000).toISOString(),
+  },
 ];
 
 async function getProposals(): Promise<Proposal[]> {

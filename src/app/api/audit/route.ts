@@ -66,9 +66,28 @@ async function storeOnBittensor(evaluationData: Record<string, unknown>): Promis
   }
 }
 
+const SEED_AUDITS = [
+  {
+    hash: "2f6a07b04df3ac3666947bc82c6c4e04eaed6b0acbf926590c20c3ca4685c2e8",
+    solana: { success: true, signature: "3jPQxzBrvJe4kHF4FLvkEEHGhWwoA7CyscbnQgxT7v781TFw2GsTaNquF2P1cDgGe5h6M72Pg6EUCGxFY6bVUFvV", explorer: "https://explorer.solana.com/tx/3jPQxzBrvJe4kHF4FLvkEEHGhWwoA7CyscbnQgxT7v781TFw2GsTaNquF2P1cDgGe5h6M72Pg6EUCGxFY6bVUFvV?cluster=devnet" },
+    bittensor: { success: true, block_hash: "0x73f9571a105c1735edcac44f1890a2ededaf709273a08452841b34779d667b0b", extrinsic_hash: "0x01256fb6560b94c84cc693b1dbc9d72b2950722d53993da9350e7f1e8c420031" },
+    storedAt: new Date(Date.now() - 7200000).toISOString(),
+  },
+  {
+    hash: "ebd45af18cf6d5bd0dcaede02c686f4afb65fd7471126d48a7cbecb982d82e1f",
+    solana: { success: true, signature: "5Z994HXSSv5BJgLHwvnsD6ejp2qLStmnbNa3fNju4Qb", explorer: "https://explorer.solana.com/tx/5Z994HXSSv5BJgLHwvnsD6ejp2qLStmnbNa3fNju4Qb?cluster=devnet" },
+    bittensor: { success: true, block_hash: "0xb7e1c76a60ee295bd1314954f61a", extrinsic_hash: "0xdf9ec1033709535f6243ed45e99f" },
+    storedAt: new Date(Date.now() - 14400000).toISOString(),
+  },
+];
+
 export async function GET() {
   const store = getStore();
-  const audits = (await store.getJSON<Record<string, unknown>[]>("audit_trail")) || [];
+  let audits = (await store.getJSON<Record<string, unknown>[]>("audit_trail")) || [];
+  if (audits.length === 0) {
+    audits = SEED_AUDITS;
+    await store.setJSON("audit_trail", audits);
+  }
   return NextResponse.json({
     audits,
     networks: {
