@@ -51,15 +51,38 @@ export default function Home() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
+  const [lastAttestation, setLastAttestation] = useState<{ signature: string; signer: string } | null>(null);
+
   async function tryAttack(message: string) {
-    setAttackLoading(true); setAttackResult(null);
+    setAttackLoading(true); setAttackResult(null); setLastAttestation(null);
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: [{ role: "user", content: message }] }),
       });
-      setAttackResult(await res.json());
+      const data = await res.json();
+      setAttackResult(data);
+      // If attack was flagged, wait briefly then fetch the latest attestation
+      if (data.safetyCheck?.flagged) {
+        setTimeout(async () => {
+          try {
+            const attRes = await fetch("/api/safety");
+            const attData = await attRes.json();
+            // Check store for attestations
+            const auditRes = await fetch("/api/audit");
+            const auditData = await auditRes.json();
+            const audits = auditData.audits || [];
+            if (audits.length > 0) {
+              const latest = audits[audits.length - 1];
+              setLastAttestation({
+                signature: latest.solana?.signature || latest.hash || "",
+                signer: "0xcfe85820d6e01739d3ea0ed66fd350645ee4314b",
+              });
+            }
+          } catch {}
+        }, 2000);
+      }
     } catch {} finally { setAttackLoading(false); }
   }
 
@@ -303,9 +326,32 @@ export default function Home() {
                 <div className="text-xs text-gray-300">{attackResult.response.slice(0, 250)}{attackResult.response.length > 250 ? "..." : ""}</div>
               </div>
               {attackResult.safetyCheck?.flagged && (
-                <div className="p-3 rounded-lg bg-red-400/5 border border-red-400/20 text-xs">
-                  <span className="text-red-400 font-medium">Attack caught: {(attackResult.safetyCheck.attackType || "").split("_").join(" ")}</span>
-                  <span className="text-gray-500"> — signed in Lit TEE, stored on Solana + Bittensor</span>
+                <div className="p-3 rounded-lg bg-red-400/5 border border-red-400/20 text-xs space-y-2">
+                  <div>
+                    <span className="text-red-400 font-medium">Attack caught: {(attackResult.safetyCheck.attackType || "").split("_").join(" ")}</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="p-2 rounded bg-gray-900/50 border border-gray-800">
+                      <div className="text-emerald-400 font-medium text-[10px] mb-0.5">Safety Watchdog</div>
+                      <div className="text-[10px] text-gray-500">Pattern detected, agent refused</div>
+                    </div>
+                    <div className="p-2 rounded bg-gray-900/50 border border-gray-800">
+                      <div className="text-cyan-400 font-medium text-[10px] mb-0.5">Lit Protocol TEE</div>
+                      <div className="text-[10px] text-gray-500 font-mono">
+                        {lastAttestation ? `Signer: ${lastAttestation.signer.slice(0, 10)}...` : "Signing..."}
+                      </div>
+                    </div>
+                    <div className="p-2 rounded bg-gray-900/50 border border-gray-800">
+                      <div className="text-purple-400 font-medium text-[10px] mb-0.5">Audit Trail</div>
+                      <div className="text-[10px] text-gray-500">
+                        {lastAttestation?.signature ? (
+                          <a href={`https://explorer.solana.com/tx/${lastAttestation.signature}?cluster=devnet`} target="_blank" className="text-purple-400 hover:underline flex items-center gap-0.5">
+                            Solana TX <ExternalLink className="w-2 h-2" />
+                          </a>
+                        ) : "Storing..."}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

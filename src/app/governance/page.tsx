@@ -31,6 +31,7 @@ export default function GovernancePage() {
   const [rules, setRules] = useState<{ id: string; rule: string; setBy: string; active: boolean }[]>([]);
   const [newRule, setNewRule] = useState("");
   const [addingRule, setAddingRule] = useState(false);
+  const [activeTab, setActiveTab] = useState<"proposals" | "rules" | "covenant">("proposals");
   const [error, setError] = useState<string | null>(null);
 
   const floorName = FLOORS.find((f) => f.id === floor)?.name;
@@ -201,6 +202,33 @@ export default function GovernancePage() {
         </div>
       )}
 
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6 border-b border-gray-800 pb-px">
+        {[
+          { id: "proposals" as const, label: "Proposals", count: proposals.filter(p => p.status === "active").length },
+          { id: "rules" as const, label: "Agent Rules", count: rules.length },
+          { id: "covenant" as const, label: "Covenant & Token", count: null },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-4 py-2 text-sm rounded-t-lg transition-colors ${
+              activeTab === tab.id
+                ? "bg-gray-800 text-white font-medium"
+                : "text-gray-500 hover:text-white"
+            }`}
+          >
+            {tab.label}
+            {tab.count !== null && tab.count > 0 && (
+              <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full ${
+                activeTab === tab.id ? "bg-emerald-400/20 text-emerald-400" : "bg-gray-700 text-gray-400"
+              }`}>{tab.count}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === "proposals" && (<>
       {/* New proposal */}
       {isVerified && (
         <div className="mb-6">
@@ -367,7 +395,10 @@ export default function GovernancePage() {
         </div>
       )}
 
-      {/* Agent Rules — behavioral constraints */}
+      </>)}
+
+      {activeTab === "rules" && (
+      /* Agent Rules — behavioral constraints */
       <div className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -440,6 +471,9 @@ export default function GovernancePage() {
         )}
       </div>
 
+      )}
+
+      {activeTab === "covenant" && (<>
       {/* Covenant of Humanistic Technologies */}
       <div className="mt-8">
         <div className="mb-4">
@@ -510,6 +544,7 @@ export default function GovernancePage() {
           </div>
         </div>
       </div>
+      </>)}
     </div>
   );
 }
