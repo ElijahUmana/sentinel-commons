@@ -170,46 +170,53 @@ export default function Home() {
   }
 
   // ═══════════════════════════════════════════════
-  // STATE 3: The Three Layers — the actual product
+  // STATE 3: Agent-centric view — the actual product
   // ═══════════════════════════════════════════════
   const activeProposals = proposals.filter(p => p.status === "active");
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
-      {/* Your agent */}
+      {/* Your agent — what it is, what it's doing */}
       <div className="glass rounded-xl p-5 mb-6 animate-fade-in">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-400/20 flex items-center justify-center">
-              <Bot className="w-5 h-5 text-emerald-400" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400/20 to-cyan-400/20 flex items-center justify-center">
+              <Bot className="w-6 h-6 text-emerald-400" />
             </div>
             <div>
-              <div className="font-semibold">Your Community Coordinator</div>
+              <div className="text-lg font-bold">Community Coordinator</div>
               <div className="text-xs text-gray-500">
-                Managing Floor {floor} ({floorInfo?.name}) · Registered on{" "}
-                <a href="https://explorer.solana.com/address/EKt86TqgTxhVh1WPnntzo9q18CrTiATX2RRniZhNAmjw?cluster=devnet" target="_blank" className="text-cyan-400 hover:underline">Solana via Metaplex</a>
-                {" · "}Signed by <span className="font-mono text-gray-400">0xcfe8...4314b</span> (Lit Protocol PKP)
+                AI agent for Floor {floor}: {floorInfo?.name} · <span className="text-emerald-400">Active</span>
               </div>
             </div>
           </div>
-          <a href="/chat" className="flex items-center gap-1.5 px-4 py-2 bg-emerald-400/20 border border-emerald-400/30 rounded-lg text-sm text-emerald-400 hover:bg-emerald-400/30 transition-colors">
+          <a href="/chat" className="flex items-center gap-1.5 px-4 py-2.5 bg-emerald-400/20 border border-emerald-400/30 rounded-xl text-sm text-emerald-400 hover:bg-emerald-400/30 transition-colors font-medium">
             <MessageSquare className="w-4 h-4" /> Talk to Agent
           </a>
         </div>
-        {/* What the agent is managing */}
-        {pools.length > 0 && (
-          <div className="p-3 rounded-lg bg-gray-900/50 border border-gray-800">
-            <div className="text-xs text-gray-500 mb-2">Currently managing treasury positions (live from Meteora DLMM on Solana):</div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-              {pools.slice(0, 4).map((p, i) => (
-                <div key={i}>
-                  <div className="font-medium">{p.name}</div>
-                  <div className="text-gray-400">${Number(p.current_price).toFixed(2)} · {p.fees_24h} fees/24h</div>
-                </div>
-              ))}
+
+        {/* Agent capabilities — what this agent can do */}
+        <div className="text-xs text-gray-400 mb-3">This agent manages your floor's resources, coordinates across the building, answers community questions, and manages treasury positions. Every action is safety-tested, signed, and stored immutably.</div>
+
+        <div className="grid grid-cols-3 gap-3 text-xs">
+          <div className="p-2.5 rounded-lg bg-gray-900/50 border border-gray-800 text-center">
+            <div className="text-lg font-bold text-white">9</div>
+            <div className="text-gray-500">Live tools</div>
+            <div className="text-[10px] text-gray-600">Treasury, market intel, governance, floor search, escrow</div>
+          </div>
+          <div className="p-2.5 rounded-lg bg-gray-900/50 border border-gray-800 text-center">
+            <div className="text-lg font-bold text-white">2</div>
+            <div className="text-gray-500">Independent agents</div>
+            <div className="text-[10px] text-gray-600">Coordinator + Safety Sentinel (separate PKPs)</div>
+          </div>
+          <div className="p-2.5 rounded-lg bg-gray-900/50 border border-gray-800 text-center">
+            <div className="text-lg font-bold text-emerald-400">On-chain</div>
+            <div className="text-gray-500">Identity</div>
+            <div className="text-[10px] text-gray-600">
+              <a href="https://explorer.solana.com/address/EKt86TqgTxhVh1WPnntzo9q18CrTiATX2RRniZhNAmjw?cluster=devnet" target="_blank" className="text-cyan-400 hover:underline">Metaplex on Solana ↗</a>
             </div>
           </div>
-        )}
+        </div>
       </div>
 
       {/* ═══ THE THREE LAYERS ═══ */}
