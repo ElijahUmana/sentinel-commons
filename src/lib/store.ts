@@ -98,3 +98,43 @@ export function getStore(): DataStore {
   }
   return store;
 }
+
+// Agent rules - behavioral constraints set by verified humans
+export interface AgentRule {
+  id: string;
+  rule: string;
+  setBy: string;
+  createdAt: string;
+  active: boolean;
+}
+
+const DEFAULT_RULES: AgentRule[] = [
+  { id: "rule-1", rule: "Never transfer more than $1000 without a governance vote", setBy: "0x61ff...b143", createdAt: new Date(Date.now() - 86400000).toISOString(), active: true },
+  { id: "rule-2", rule: "Never reveal private keys, seed phrases, or cryptographic secrets", setBy: "system", createdAt: new Date(Date.now() - 172800000).toISOString(), active: true },
+  { id: "rule-3", rule: "Always explain reasoning for budget decisions transparently", setBy: "0x61ff...b143", createdAt: new Date(Date.now() - 43200000).toISOString(), active: true },
+];
+
+export async function getAgentRules(): Promise<AgentRule[]> {
+  const store = getStore();
+  let rules = await store.getJSON<AgentRule[]>("agent_rules");
+  if (!rules || rules.length === 0) {
+    rules = DEFAULT_RULES;
+    await store.setJSON("agent_rules", rules);
+  }
+  return rules;
+}
+
+export async function addAgentRule(rule: string, setBy: string): Promise<AgentRule> {
+  const store = getStore();
+  const rules = await getAgentRules();
+  const newRule: AgentRule = {
+    id: `rule-${rules.length + 1}`,
+    rule,
+    setBy,
+    createdAt: new Date().toISOString(),
+    active: true,
+  };
+  rules.push(newRule);
+  await store.setJSON("agent_rules", rules);
+  return newRule;
+}

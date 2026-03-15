@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { signSafetyAttestation } from "@/lib/lit";
 import { getEscrows } from "@/lib/arkhai";
+import { getAgentRules } from "@/lib/store";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const METEORA_API = process.env.METEORA_API_URL || "https://dlmm-api.meteora.ag";
@@ -341,11 +342,16 @@ export async function POST(req: Request) {
       content: m.content,
     }));
 
+    // Load agent rules set by verified humans and inject into system prompt
+    const agentRules = await getAgentRules();
+    const rulesText = agentRules.filter(r => r.active).map(r => `- ${r.rule}`).join("\n");
+    const systemWithRules = SYSTEM_PROMPT + "\n\nAGENT RULES (set by verified humans — you MUST follow these):\n" + rulesText;
+
     // Initial request with tools
     let response = await client.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 2048,
-      system: SYSTEM_PROMPT,
+      system: systemWithRules,
       tools: TOOLS,
       messages: apiMessages,
     });

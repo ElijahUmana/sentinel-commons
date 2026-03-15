@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Users, CheckCircle, XCircle, Vote, Shield, ExternalLink, Building2, Loader2, AlertCircle } from "lucide-react";
+import { Users, CheckCircle, XCircle, Vote, Shield, ExternalLink, Building2, Loader2, AlertCircle, Lock, Plus } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { FLOORS } from "@/components/ConnectWallet";
 
@@ -28,6 +28,9 @@ export default function GovernancePage() {
   const [newFloorId, setNewFloorId] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [votingOn, setVotingOn] = useState<string | null>(null);
+  const [rules, setRules] = useState<{ id: string; rule: string; setBy: string; active: boolean }[]>([]);
+  const [newRule, setNewRule] = useState("");
+  const [addingRule, setAddingRule] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const floorName = FLOORS.find((f) => f.id === floor)?.name;
@@ -35,12 +38,14 @@ export default function GovernancePage() {
   const loadProposals = useCallback(async () => {
     setLoading(true);
     try {
-      const url = floor ? `/api/governance?floorId=${floor}` : "/api/governance";
-      const res = await fetch(url);
-      const data = await res.json();
-      setProposals(data.proposals || []);
+      const [propRes, rulesRes] = await Promise.allSettled([
+        fetch(floor ? `/api/governance?floorId=${floor}` : "/api/governance").then(r => r.json()),
+        fetch("/api/rules").then(r => r.json()),
+      ]);
+      if (propRes.status === "fulfilled") setProposals(propRes.value.proposals || []);
+      if (rulesRes.status === "fulfilled") setRules(rulesRes.value.rules || []);
     } catch {
-      setError("Failed to load proposals");
+      setError("Failed to load");
     } finally {
       setLoading(false);
     }
@@ -361,6 +366,79 @@ export default function GovernancePage() {
           })}
         </div>
       )}
+
+      {/* Agent Rules — behavioral constraints */}
+      <div className="mt-8">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-lg font-bold flex items-center gap-2">
+              <Lock className="w-5 h-5 text-purple-400" />
+              Agent Rules
+            </h2>
+            <p className="text-xs text-gray-500">Behavioral constraints that the agent MUST follow. Set by verified humans.</p>
+          </div>
+        </div>
+
+        <div className="space-y-2 mb-4">
+          {rules.map((rule) => (
+            <div key={rule.id} className="glass rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span className="text-sm font-medium">{rule.rule}</span>
+              </div>
+              <div className="text-[10px] text-gray-500 ml-6">
+                Set by {rule.setBy} · {rule.active ? "Active" : "Disabled"}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {isVerified && (
+          <div className="glass rounded-xl p-4">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newRule}
+                onChange={(e) => setNewRule(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && newRule.trim()) {
+                    setAddingRule(true);
+                    fetch("/api/rules", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ rule: newRule.trim(), setBy: `${address?.slice(0, 6)}...${address?.slice(-4)}` }),
+                    })
+                      .then(r => r.json())
+                      .then(d => { if (d.rule) { setRules(prev => [...prev, d.rule]); setNewRule(""); } })
+                      .finally(() => setAddingRule(false));
+                  }
+                }}
+                placeholder='Add a rule, e.g. "Never allocate more than 30% to one pool"'
+                className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-400/50 placeholder:text-gray-600"
+              />
+              <button
+                onClick={() => {
+                  if (!newRule.trim()) return;
+                  setAddingRule(true);
+                  fetch("/api/rules", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ rule: newRule.trim(), setBy: `${address?.slice(0, 6)}...${address?.slice(-4)}` }),
+                  })
+                    .then(r => r.json())
+                    .then(d => { if (d.rule) { setRules(prev => [...prev, d.rule]); setNewRule(""); } })
+                    .finally(() => setAddingRule(false));
+                }}
+                disabled={addingRule || !newRule.trim()}
+                className="flex items-center gap-1 px-4 py-2 bg-purple-400/20 border border-purple-400/30 rounded-lg text-sm text-purple-400 hover:bg-purple-400/30 disabled:opacity-50"
+              >
+                {addingRule ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                Add Rule
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

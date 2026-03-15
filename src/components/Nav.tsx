@@ -29,6 +29,7 @@ export function Nav() {
                 <NavLink href="/" label="Home" active={pathname === "/"} />
                 <NavLink href="/chat" label="Chat" active={pathname === "/chat"} />
                 <NavLink href="/governance" label="Governance" active={pathname === "/governance"} />
+                <NavLink href="/audit" label="Audit Trail" active={pathname === "/audit"} />
                 <div className="w-px h-5 bg-gray-800" />
               </>
             )}
