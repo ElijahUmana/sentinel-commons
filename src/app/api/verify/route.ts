@@ -42,10 +42,11 @@ export async function GET(req: Request) {
     const blockData = await blockRes.json();
     const currentBlock = parseInt(blockData.result, 16);
 
-    // Scan the last ~20000 blocks in chunks of 2000 (covers ~last few days on Optimism)
+    // Scan from a known safe start block (before the hackathon) in chunks
+    // The SBT was minted around block 148976019, so start well before that
     const CHUNK_SIZE = 2000;
-    const TOTAL_RANGE = 20000;
-    const startBlock = currentBlock - TOTAL_RANGE;
+    const KNOWN_START = 148970000; // Before the hackathon started
+    const startBlock = Math.min(KNOWN_START, currentBlock - 50000);
 
     for (let from = startBlock; from < currentBlock; from += CHUNK_SIZE) {
       const to = Math.min(from + CHUNK_SIZE - 1, currentBlock);
