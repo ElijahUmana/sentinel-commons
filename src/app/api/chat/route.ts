@@ -93,7 +93,42 @@ const TOOLS: Anthropic.Messages.Tool[] = [
       required: ["evaluation_result", "score"],
     },
   },
+  {
+    name: "gather_market_intel",
+    description: "Uses Unbrowse to pull real-time market data directly from websites like CoinGecko and DeFiLlama — 100x faster than headless browsers. Use when the user asks about current market conditions, prices, or sentiment to inform LP strategy decisions.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        query: { type: "string", description: "What market data to look for (e.g. 'SOL price', 'top DeFi yields')" },
+      },
+      required: ["query"],
+    },
+  },
+  {
+    name: "get_floor_info",
+    description: "Returns information about a specific Frontier Tower floor — name, description, resources, events. Use when someone asks about a floor or needs to find resources in the building.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        floor_id: { type: "number", description: "Floor number (2, 4, 6, 7, 8, 9, 11, 12, 14, or 16)" },
+      },
+      required: [],
+    },
+  },
+  {
+    name: "search_building_resources",
+    description: "Searches across all Frontier Tower floors for specific resources or equipment. Use when someone asks 'where can I find a 3D printer' or 'who has GPU compute'.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        query: { type: "string", description: "Resource to search for (e.g. '3D printer', 'GPU', 'recording studio')" },
+      },
+      required: ["query"],
+    },
+  },
 ];
+
+const UNBROWSE_URL = process.env.UNBROWSE_URL || "http://localhost:6969";
 
 // Actual tool execution functions
 async function executeTool(name: string, input: Record<string, unknown>): Promise<string> {
@@ -227,6 +262,65 @@ async function executeTool(name: string, input: Record<string, unknown>): Promis
       } catch (error) {
         return JSON.stringify({ error: `Lit Protocol signing failed: ${error}`, fallback: "Attestation logged locally" });
       }
+    }
+
+    case "gather_market_intel": {
+      const query = (input.query as string) || "crypto prices";
+      try {
+        const res = await fetch(`${UNBROWSE_URL}/v1/intent/resolve`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            intent: query,
+            params: { url: "https://www.coingecko.com" },
+            context: { url: "https://www.coingecko.com" },
+          }),
+          signal: AbortSignal.timeout(15000),
+        });
+        const data = await res.json();
+        return JSON.stringify({
+          intelligence: data.result || data,
+          source: "Unbrowse (direct API access to CoinGecko)",
+          method: "Reverse-engineered website API — 100x faster than headless browser",
+          timestamp: new Date().toISOString(),
+        });
+      } catch {
+        return JSON.stringify({ error: "Unbrowse unavailable. Run 'npx unbrowse setup' locally.", source: "unbrowse" });
+      }
+    }
+
+    case "get_floor_info": {
+      const { getBuildingData, getFloorById } = await import("@/lib/building");
+      const floorId = input.floor_id as number;
+      if (floorId) {
+        const floor = getFloorById(floorId);
+        if (!floor) return JSON.stringify({ error: `Floor ${floorId} not found` });
+        return JSON.stringify({ floor, source: "Frontier Tower building data" });
+      }
+      const building = getBuildingData();
+      return JSON.stringify({
+        name: building.name,
+        thesis: building.thesis,
+        totalMembers: building.totalMembers,
+        governanceExperiment: building.governanceExperiment,
+        floors: building.floors.map((f) => ({ id: f.id, name: f.name })),
+        source: "Frontier Tower building data",
+      });
+    }
+
+    case "search_building_resources": {
+      const { searchResources } = await import("@/lib/building");
+      const q = (input.query as string) || "";
+      const results = searchResources(q);
+      return JSON.stringify({
+        query: q,
+        results: results.map((r) => ({
+          floor: r.floor.id,
+          floorName: r.floor.name,
+          resource: r.resource,
+        })),
+        source: "Frontier Tower building data",
+      });
     }
 
     default:
