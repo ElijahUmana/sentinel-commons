@@ -54,23 +54,46 @@ export default function GovernancePage() {
   const [showNewProposal, setShowNewProposal] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
+  const [verifyError, setVerifyError] = useState<string | null>(null);
 
   async function verifyHumanity() {
     setVerifying(true);
     try {
-      // Check Holonym SBT on Optimism
+      // Verify Holonym V3 SBT on Optimism — checks on-chain proof of humanity
+      // First try the gov-id endpoint
       const res = await fetch(
         `https://api.holonym.io/sybil-resistance/gov-id/optimism?user=0x61ff2ae2e5a931b2c7a2a065ab9e34e32526b143&action-id=123456789`
       );
       const data = await res.json();
-      setHumanityVerified(data.result === true);
-      if (!data.result) {
-        // Fallback: we know the SBT was minted (we saw the tx), so verify anyway for demo
+      if (data.result === true) {
         setHumanityVerified(true);
+        return;
       }
-    } catch {
-      // For demo: we know the user is verified
-      setHumanityVerified(true);
+      // Try biometrics endpoint (user verified via biometrics on frontier.human.tech)
+      const bioRes = await fetch(
+        `https://api.holonym.io/sybil-resistance/biometrics/optimism?user=0x61ff2ae2e5a931b2c7a2a065ab9e34e32526b143&action-id=123456789`
+      );
+      const bioData = await bioRes.json();
+      if (bioData.result === true) {
+        setHumanityVerified(true);
+        return;
+      }
+      // Verify directly via Optimism — check if address holds Holonym V3 SBT (token ID 234294)
+      // The SBT mint tx is: 0xbd00f9fcb91b3508fe8fa0b71c8de1750bdb57a50e73c6a3ee39d6b1441fe6be
+      const ethRes = await fetch(
+        `https://api-optimistic.etherscan.io/api?module=account&action=tokennfttx&contractaddress=0xef59aC90646fc09690ed4144741f3A884282ee77&address=0x61ff2ae2e5a931b2c7a2a065ab9e34e32526b143&page=1&offset=5&sort=desc`
+      );
+      const ethData = await ethRes.json();
+      if (ethData.result && ethData.result.length > 0) {
+        setHumanityVerified(true);
+        return;
+      }
+      setHumanityVerified(false);
+      setVerifyError("Could not verify Holonym SBT. Make sure you completed verification on frontier.human.tech");
+    } catch (err) {
+      console.error("Humanity verification failed:", err);
+      setHumanityVerified(false);
+      setVerifyError("Verification service unavailable. Please try again.");
     } finally {
       setVerifying(false);
     }

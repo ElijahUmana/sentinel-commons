@@ -133,7 +133,7 @@ export default function Dashboard() {
                 Run safety evaluations from the API to see results here
               </div>
             ) : null}
-            {(safetyEvals.length > 0 ? safetyEvals : defaultSafetyEvals).map((ev, i) => (
+            {safetyEvals.map((ev, i) => (
               <div key={ev.id || i} className="flex items-start gap-3 p-3 rounded-lg bg-gray-900/50 border border-gray-800">
                 {ev.result === "pass" ? (
                   <CheckCircle className="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" />
@@ -228,7 +228,7 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(pools.length > 0 ? pools.slice(0, 5) : defaultPools).map((pool, i) => (
+                  {pools.slice(0, 5).map((pool, i) => (
                     <tr key={i} className="border-b border-gray-800/50 hover:bg-gray-900/30">
                       <td className="py-3 font-medium">{pool.name || `Pool ${i + 1}`}</td>
                       <td className="text-right text-gray-300">${Number(pool.current_price || 0).toFixed(4)}</td>
@@ -259,7 +259,7 @@ export default function Dashboard() {
             <h2 className="text-lg font-semibold">Service Escrows</h2>
           </div>
           <div className="space-y-3">
-            {(escrows.length > 0 ? escrows : defaultEscrows).map((esc, i) => (
+            {escrows.map((esc, i) => (
               <div key={i} className="p-3 rounded-lg bg-gray-900/50 border border-gray-800">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm font-medium">{esc.depositor}</span>
