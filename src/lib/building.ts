@@ -13,6 +13,8 @@ export interface Floor {
   memberCount: number;
   resources: string[];
   currentEvents: string[];
+  budget: { total: number; spent: number; currency: string };
+  bounties: { title: string; amount: string; status: string }[];
 }
 
 export interface BuildingData {
@@ -40,6 +42,8 @@ export function getBuildingData(): BuildingData {
         memberCount: 80,
         resources: ["Stage & AV Equipment", "Seating for 200", "Live Streaming Setup", "Recording Equipment"],
         currentEvents: ["Intelligence at the Frontier Hackathon"],
+        budget: { total: 8000, spent: 5200, currency: "USDC" },
+        bounties: [{ title: "Set up live streaming for hackathon demos", amount: "200 USDC", status: "open" }],
       },
       {
         id: 4,
@@ -48,6 +52,8 @@ export function getBuildingData(): BuildingData {
         memberCount: 60,
         resources: ["Robot Lab", "Electronics Workbench", "Soldering Stations", "Oscilloscopes"],
         currentEvents: [],
+        budget: { total: 5000, spent: 2100, currency: "USDC" },
+        bounties: [{ title: "Repair soldering station #3", amount: "150 USDC", status: "open" }, { title: "Calibrate oscilloscopes", amount: "100 USDC", status: "claimed" }],
       },
       {
         id: 6,
@@ -56,6 +62,8 @@ export function getBuildingData(): BuildingData {
         memberCount: 45,
         resources: ["Recording Studio", "Digital Art Stations", "Performance Space", "VR Headsets"],
         currentEvents: [],
+        budget: { total: 3000, spent: 800, currency: "USDC" },
+        bounties: [{ title: "Design generative art for hackathon badge", amount: "100 USDC", status: "open" }],
       },
       {
         id: 7,
@@ -64,6 +72,8 @@ export function getBuildingData(): BuildingData {
         memberCount: 55,
         resources: ["3D Printers", "CNC Router", "Laser Cutter", "Hand Tools & Workbenches"],
         currentEvents: [],
+        budget: { total: 4000, spent: 1500, currency: "USDC" },
+        bounties: [{ title: "Fix 3D printer #2 (jammed extruder)", amount: "50 USDC", status: "open" }, { title: "Organize tool wall", amount: "30 USDC", status: "completed" }],
       },
       {
         id: 8,
@@ -72,6 +82,8 @@ export function getBuildingData(): BuildingData {
         memberCount: 40,
         resources: ["EEG Equipment", "Microscopes", "Bio-sample Prep Area", "Research Library"],
         currentEvents: [],
+        budget: { total: 6000, spent: 3400, currency: "USDC" },
+        bounties: [],
       },
       {
         id: 9,
@@ -80,6 +92,8 @@ export function getBuildingData(): BuildingData {
         memberCount: 75,
         resources: ["GPU Compute Cluster", "ML Workstations", "Inference Servers", "Whiteboard Room"],
         currentEvents: ["AI Safety Reading Group"],
+        budget: { total: 5000, spent: 1800, currency: "USDC" },
+        bounties: [{ title: "Write safety evaluation for new chat agent", amount: "200 USDC", status: "open" }, { title: "Set up monitoring dashboard", amount: "150 USDC", status: "claimed" }],
       },
       {
         id: 11,
@@ -88,6 +102,8 @@ export function getBuildingData(): BuildingData {
         memberCount: 35,
         resources: ["Biomarker Testing Equipment", "Cold Plunge", "Research Library", "Meeting Rooms"],
         currentEvents: [],
+        budget: { total: 3500, spent: 900, currency: "USDC" },
+        bounties: [],
       },
       {
         id: 12,
@@ -96,6 +112,8 @@ export function getBuildingData(): BuildingData {
         memberCount: 90,
         resources: ["Validator Nodes", "Hardware Wallet Lab", "Smart Contract Dev Environment"],
         currentEvents: ["ETH SF Weekly Meetup"],
+        budget: { total: 7000, spent: 4200, currency: "USDC" },
+        bounties: [{ title: "Audit smart contract for floor governance", amount: "500 USDC", status: "open" }],
       },
       {
         id: 14,
@@ -104,6 +122,8 @@ export function getBuildingData(): BuildingData {
         memberCount: 50,
         resources: ["Meditation Room", "Community Kitchen", "Garden Terrace", "Wellness Library"],
         currentEvents: [],
+        budget: { total: 3000, spent: 1200, currency: "USDC" },
+        bounties: [{ title: "Organize community dinner for 50 people", amount: "300 USDC", status: "open" }],
       },
       {
         id: 16,
@@ -112,6 +132,8 @@ export function getBuildingData(): BuildingData {
         memberCount: 65,
         resources: ["Secure Compute Lab", "Air-Gapped Workstations", "Cryptography Library"],
         currentEvents: [],
+        budget: { total: 5000, spent: 2000, currency: "USDC" },
+        bounties: [{ title: "Security audit of building network", amount: "400 USDC", status: "open" }],
       },
     ],
   };

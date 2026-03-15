@@ -205,23 +205,23 @@ export default function Home() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
           <div className="p-2.5 rounded-lg bg-gray-900/50 border border-gray-800">
             <DollarSign className="w-4 h-4 text-emerald-400 mb-1" />
-            <div className="font-medium">Budget</div>
-            <div className="text-gray-500">Managed via Meteora LP</div>
+            <div className="font-medium">${floorInfo?.budget.total.toLocaleString()} Budget</div>
+            <div className="text-gray-500">${((floorInfo?.budget.total || 0) - (floorInfo?.budget.spent || 0)).toLocaleString()} remaining</div>
           </div>
           <div className="p-2.5 rounded-lg bg-gray-900/50 border border-gray-800">
-            <Calendar className="w-4 h-4 text-cyan-400 mb-1" />
-            <div className="font-medium">Events</div>
-            <div className="text-gray-500">{floorInfo?.currentEvents.length || 0} active</div>
+            <Wrench className="w-4 h-4 text-cyan-400 mb-1" />
+            <div className="font-medium">{floorInfo?.bounties.filter(b => b.status === "open").length || 0} Bounties</div>
+            <div className="text-gray-500">{floorInfo?.bounties.length || 0} total via Arkhai escrow</div>
           </div>
           <div className="p-2.5 rounded-lg bg-gray-900/50 border border-gray-800">
-            <Wrench className="w-4 h-4 text-purple-400 mb-1" />
-            <div className="font-medium">Equipment</div>
-            <div className="text-gray-500">{floorInfo?.resources.length || 0} resources</div>
+            <Calendar className="w-4 h-4 text-purple-400 mb-1" />
+            <div className="font-medium">{floorInfo?.resources.length} Resources</div>
+            <div className="text-gray-500">{floorInfo?.currentEvents.length || 0} events active</div>
           </div>
           <div className="p-2.5 rounded-lg bg-gray-900/50 border border-gray-800">
             <Users className="w-4 h-4 text-yellow-400 mb-1" />
-            <div className="font-medium">Members</div>
-            <div className="text-gray-500">{floorInfo?.memberCount || 0} people</div>
+            <div className="font-medium">{floorInfo?.memberCount} Members</div>
+            <div className="text-gray-500">Verified via Holonym SBT</div>
           </div>
         </div>
       </div>
