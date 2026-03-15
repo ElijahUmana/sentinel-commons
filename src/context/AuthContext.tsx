@@ -16,8 +16,8 @@ interface AuthState {
 interface AuthContextType extends AuthState {
   connect: (address: string) => Promise<void>;
   disconnect: () => void;
-  setFloor: (floor: number) => void;
-  setRole: (role: UserRole) => void;
+  setFloor: (floor: number | null) => void;
+  setRole: (role: UserRole | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -120,7 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("sentinel-auth");
   }
 
-  function setFloor(floor: number) {
+  function setFloor(floor: number | null) {
     setState((prev) => {
       const newState = { ...prev, floor };
       localStorage.setItem("sentinel-auth", JSON.stringify(newState));
@@ -128,7 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }
 
-  function setRole(role: UserRole) {
+  function setRole(role: UserRole | null) {
     setState((prev) => {
       const newState = { ...prev, role };
       localStorage.setItem("sentinel-auth", JSON.stringify(newState));

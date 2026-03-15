@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Shield, Bot, CheckCircle, Lock, Globe,
   ExternalLink, Building2, Loader2, MessageSquare,
-  Vote, AlertTriangle, ArrowRight, TrendingUp,
+  Vote, AlertTriangle, ArrowRight, TrendingUp, ChevronDown,
   DollarSign, Calendar, Wrench, Users, Play, Send
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -36,6 +36,8 @@ export default function Home() {
   const [attackLoading, setAttackLoading] = useState(false);
   const [runningEval, setRunningEval] = useState(false);
   const [evalResult, setEvalResult] = useState<Record<string, unknown> | null>(null);
+  const [showActivity, setShowActivity] = useState(false);
+  const [showTrust, setShowTrust] = useState(false);
 
   const building = getBuildingData();
   const floorInfo = building.floors.find((f) => f.id === floor);
@@ -253,7 +255,7 @@ export default function Home() {
           </button>
         </div>
         <div className="text-center mt-4">
-          <button onClick={() => setFloor(0 as never)} className="text-xs text-gray-500 hover:text-white">← Change floor</button>
+          <button onClick={() => { setFloor(null); setRole(null); }} className="text-xs text-gray-500 hover:text-white">← Change floor</button>
         </div>
       </div>
     );
@@ -280,7 +282,7 @@ export default function Home() {
             {role === "lead" ? "Floor Lead" : "Member"}
           </span>
           {isVerified && <span className="flex items-center gap-1 text-emerald-400 px-2 py-1 bg-emerald-400/10 rounded-full"><CheckCircle className="w-3 h-3" /> Verified</span>}
-          <button onClick={() => setRole("member" as never)} className="text-gray-500 hover:text-white">Switch role</button>
+          <button onClick={() => setRole(null)} className="text-gray-500 hover:text-white">Switch role</button>
         </div>
       </div>
 
@@ -325,18 +327,19 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Agent activity feed — what the agent has been DOING */}
+      {/* Agent activity feed — collapsible */}
       {activities.length > 0 && (
-        <div className="glass rounded-xl p-4 mb-5 animate-slide-up" style={{animationDelay:"0.03s"}}>
-          <div className="flex items-center justify-between mb-3">
+        <div className="glass rounded-xl mb-5 animate-slide-up" style={{animationDelay:"0.03s"}}>
+          <button onClick={() => setShowActivity(!showActivity)} className="w-full flex items-center justify-between p-4 hover:bg-gray-900/30 transition-colors rounded-xl">
             <div className="flex items-center gap-2">
               <Bot className="w-4 h-4 text-emerald-400" />
               <span className="text-sm font-semibold">Agent Activity</span>
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] text-gray-500">{activities.length} recent actions</span>
             </div>
-            <span className="text-[10px] text-gray-500">Recent actions by the Community Coordinator</span>
-          </div>
-          <div className="space-y-1.5">
+            <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showActivity ? "rotate-180" : ""}`} />
+          </button>
+          {showActivity && <div className="px-4 pb-4 space-y-1.5">
             {activities.slice(0, role === "lead" ? 8 : 5).map((act) => {
               const typeColors: Record<string, string> = {
                 safety: "text-red-400",
@@ -371,7 +374,7 @@ export default function Home() {
                 </div>
               );
             })}
-          </div>
+          </div>}
         </div>
       )}
 
@@ -494,10 +497,13 @@ export default function Home() {
         </div>
       )}
 
-      {/* THE THREE LAYERS — why you can trust this agent */}
-      <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Why you can trust this agent</h2>
+      {/* THE THREE LAYERS — collapsible */}
+      <button onClick={() => setShowTrust(!showTrust)} className="w-full flex items-center justify-between mb-3 group">
+        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider group-hover:text-white transition-colors">Why you can trust this agent</h2>
+        <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showTrust ? "rotate-180" : ""}`} />
+      </button>
 
-      <div className="space-y-4 mb-6">
+      {showTrust && <div className="space-y-4 mb-6">
         {/* LAYER 1: SAFETY — interactive attack demo */}
         <div className="glass rounded-xl p-5 border-l-2 border-l-emerald-400/50 animate-slide-up">
           <div className="flex items-center gap-2 mb-1">
@@ -646,7 +652,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </div>
+      </div>}
     </div>
   );
 }
