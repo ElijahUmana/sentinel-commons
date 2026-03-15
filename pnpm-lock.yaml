@@ -17,6 +17,12 @@ importers:
       '@metaplex-foundation/mpl-core':
         specifier: ^1.8.0
         version: 1.8.0(@metaplex-foundation/umi@1.5.1)(@noble/hashes@1.8.0)
+      '@metaplex-foundation/mpl-token-metadata':
+        specifier: ^3.4.0
+        version: 3.4.0(@metaplex-foundation/umi@1.5.1)
+      '@metaplex-foundation/mpl-toolbox':
+        specifier: ^0.10.0
+        version: 0.10.0(@metaplex-foundation/umi@1.5.1)
       '@metaplex-foundation/umi':
         specifier: ^1.5.1
         version: 1.5.1
@@ -716,6 +722,11 @@ packages:
     peerDependencies:
       '@metaplex-foundation/umi': '>=0.8.2 <2.0.0'
       '@noble/hashes': ^1.3.1
+
+  '@metaplex-foundation/mpl-token-metadata@3.4.0':
+    resolution: {integrity: sha512-AxBAYCK73JWxY3g9//z/C9krkR0t1orXZDknUPS4+GjwGH2vgPfsk04yfZ31Htka2AdS9YE/3wH7sMUBHKn9Rg==}
+    peerDependencies:
+      '@metaplex-foundation/umi': '>= 0.8.2 <= 1'
 
   '@metaplex-foundation/mpl-toolbox@0.10.0':
     resolution: {integrity: sha512-84KD1L5cFyw5xnntHwL4uPwfcrkKSiwuDeypiVr92qCUFuF3ZENa2zlFVPu+pQcjTlod2LmEX3MhBmNjRMpdKg==}
@@ -4532,6 +4543,11 @@ snapshots:
       '@metaplex-foundation/umi': 1.5.1
       '@msgpack/msgpack': 3.1.3
       '@noble/hashes': 1.8.0
+
+  '@metaplex-foundation/mpl-token-metadata@3.4.0(@metaplex-foundation/umi@1.5.1)':
+    dependencies:
+      '@metaplex-foundation/mpl-toolbox': 0.10.0(@metaplex-foundation/umi@1.5.1)
+      '@metaplex-foundation/umi': 1.5.1
 
   '@metaplex-foundation/mpl-toolbox@0.10.0(@metaplex-foundation/umi@1.5.1)':
     dependencies:

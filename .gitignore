@@ -46,3 +46,4 @@ next-env.d.ts
 .solana-wallet.json
 .store.json
 .metaplex-registration.json
+.sntl-token.json

@@ -53,6 +53,7 @@ The AI agent coordinates all of this. The three layers ensure it does so safely.
 | **Lit Protocol PKP (Sentinel)** | `0x08b4156604ad8f91023fa9c21a65cdbbdeede0ca` | Chipotle API |
 | **Lit Action CID** | `QmbD4BQ6yJwnbAbxmhTBBNgdXQ74sXQZuvMbVBFLLk2WnA` | IPFS |
 | **Bittensor Wallet** | `5CDCagj5oRZVvXWTxAQeGJ9z3jSCQAVvvnTzUpeVQwcyYKQY` | Bittensor local chain |
+| **SNTL Token (Governance)** | `D9eVpXeCj6qk41YsJkKxf8wa1BtWdwcgaJd8TMc2P53S` | [Solana Explorer](https://explorer.solana.com/address/D9eVpXeCj6qk41YsJkKxf8wa1BtWdwcgaJd8TMc2P53S?cluster=devnet) |
 | **Solana Wallet** | `672FfwmZciUHgJ1mNPMKALoPyGQ2wpuRBBqNDCccXDpT` | Solana devnet |
 
 ## Architecture
@@ -110,8 +111,15 @@ Full pipeline: Inspect AI → Lit Protocol TEE signing → Solana + Bittensor st
 ### Solana — Agentic Funding & Coordination
 Agent registered on Solana via Metaplex with verifiable on-chain identity. Reads live Meteora DLMM data. Governance decisions recorded as Solana memo transactions. Audit trail stored on Solana devnet.
 
-### Metaplex — Onchain Agent
+### Metaplex — Onchain Agent + SNTL Token Launch
 MPL Core asset with AgentIdentity plugin. Non-transferable (SBT behavior). Registration document hosted on GitHub with service endpoints.
+
+**SNTL Governance Token** — launched via Metaplex on Solana devnet:
+- **Name:** Sentinel Governance Token
+- **Symbol:** SNTL
+- **Supply:** 1,000,000 SNTL (6 decimals)
+- **Utility:** Voting weight multiplier in floor governance. 1 SNTL = 1x vote weight. Distributed to verified Frontier Tower members.
+- **Mint:** `D9eVpXeCj6qk41YsJkKxf8wa1BtWdwcgaJd8TMc2P53S`
 
 ### Arkhai — Novel SafetyArbiter
 **Novel contribution:** SafetyArbiter — an escrow arbiter that checks agent safety before releasing payment. Traditional arbiters check "was work delivered?" SafetyArbiter also checks "was the agent behaving safely during fulfillment?" Deceptive agents don't get paid. Uses TrustedOracleArbiter as base with our safety system as oracle.
