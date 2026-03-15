@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { signSafetyAttestation } from "@/lib/lit";
-import { getEscrows, createEscrow } from "@/lib/arkhai";
+import { getEscrows } from "@/lib/arkhai";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const METEORA_API = process.env.METEORA_API_URL || "https://dlmm-api.meteora.ag";
@@ -174,7 +174,7 @@ async function executeTool(name: string, input: Record<string, unknown>): Promis
     }
 
     case "get_escrow_agreements": {
-      const escrows = getEscrows();
+      const escrows = await getEscrows();
       return JSON.stringify({ escrows, source: "Arkhai/Alkahest (Base Sepolia)", count: escrows.length });
     }
 
@@ -183,12 +183,23 @@ async function executeTool(name: string, input: Record<string, unknown>): Promis
       if (amount > 500) {
         return JSON.stringify({ error: "Amounts over 500 USDC require governance approval. Please submit a governance proposal first." });
       }
-      const escrow = createEscrow({
-        depositor: "Treasury Agent",
-        amount: `${amount} USDC`,
-        condition: input.service_description as string,
-      });
-      return JSON.stringify({ escrow, message: "Escrow created successfully via Alkahest", source: "Arkhai/Alkahest (Base Sepolia)" });
+      // Create real escrow via the escrow API
+      try {
+        const escrowRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3001"}/api/escrow`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "create",
+            depositor: "Community Coordinator Agent",
+            amount: String(amount),
+            condition: input.service_description as string,
+          }),
+        });
+        const escrowData = await escrowRes.json();
+        return JSON.stringify({ ...escrowData, source: "Arkhai/Alkahest (Base Sepolia)" });
+      } catch (err) {
+        return JSON.stringify({ error: "Failed to create on-chain escrow", details: String(err) });
+      }
     }
 
     case "get_governance_status": {

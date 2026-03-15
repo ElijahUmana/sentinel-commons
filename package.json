@@ -14,6 +14,7 @@
     "@metaplex-foundation/mpl-core": "^1.8.0",
     "@metaplex-foundation/umi": "^1.5.1",
     "@metaplex-foundation/umi-bundle-defaults": "^1.5.1",
+    "@metaplex-foundation/umi-uploader-irys": "^1.5.0",
     "@meteora-ag/dlmm": "^1.9.4",
     "@solana/web3.js": "^1.98.4",
     "alkahest-ts": "^0.7.3",
@@ -23,6 +24,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "recharts": "^3.8.0",
+    "tsx": "^4.21.0",
     "viem": "^2.47.4"
   },
   "devDependencies": {
