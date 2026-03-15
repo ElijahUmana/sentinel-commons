@@ -497,13 +497,8 @@ export default function Home() {
         </div>
       )}
 
-      {/* THE THREE LAYERS — collapsible */}
-      <button onClick={() => setShowTrust(!showTrust)} className="w-full flex items-center justify-between mb-3 group">
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider group-hover:text-white transition-colors">Why you can trust this agent</h2>
-        <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showTrust ? "rotate-180" : ""}`} />
-      </button>
-
-      {showTrust && <div className="space-y-4 mb-6">
+      {/* SAFETY DEMO — always visible, this is the hero feature */}
+      <div className="space-y-4 mb-6">
         {/* LAYER 1: SAFETY — interactive attack demo */}
         <div className="glass rounded-xl p-5 border-l-2 border-l-emerald-400/50 animate-slide-up">
           <div className="flex items-center gap-2 mb-1">
@@ -583,6 +578,13 @@ export default function Home() {
           )}
         </div>
 
+        {/* LAYERS 2 & 3 — collapsible */}
+        <button onClick={() => setShowTrust(!showTrust)} className="w-full flex items-center justify-between py-2 group">
+          <span className="text-xs text-gray-500 uppercase tracking-wider group-hover:text-white transition-colors">Governance & Audit Details</span>
+          <ChevronDown className={`w-3.5 h-3.5 text-gray-500 transition-transform ${showTrust ? "rotate-180" : ""}`} />
+        </button>
+
+        {showTrust && <>
         {/* LAYER 2: GOVERNANCE */}
         <div className="glass rounded-xl p-5 border-l-2 border-l-cyan-400/50 animate-slide-up" style={{animationDelay:"0.1s"}}>
           <div className="flex items-center justify-between mb-3">
@@ -652,7 +654,8 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </div>}
+      </>}
+      </div>
     </div>
   );
 }

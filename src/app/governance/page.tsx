@@ -154,6 +154,15 @@ export default function GovernancePage() {
         </div>
       )}
 
+      {address && authLoading && (
+        <div className="glass rounded-xl p-4 mb-6 animate-fade-in">
+          <div className="flex items-center gap-3">
+            <Loader2 className="w-5 h-5 text-gray-400 animate-spin shrink-0" />
+            <div className="text-sm text-gray-400">Checking verification status...</div>
+          </div>
+        </div>
+      )}
+
       {address && !isVerified && !authLoading && (
         <div className="glass rounded-xl p-4 mb-6 animate-fade-in">
           <div className="flex items-center gap-3">

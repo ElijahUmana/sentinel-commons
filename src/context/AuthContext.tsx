@@ -23,32 +23,15 @@ interface AuthContextType extends AuthState {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 async function checkHolonymSBT(address: string): Promise<boolean> {
-  // Try multiple Holonym verification endpoints
-  const endpoints = [
-    `https://api.holonym.io/sybil-resistance/biometrics/optimism?user=${address}&action-id=123456789`,
-    `https://api.holonym.io/sybil-resistance/gov-id/optimism?user=${address}&action-id=123456789`,
-  ];
-
-  for (const url of endpoints) {
-    try {
-      const res = await fetch(url);
-      const data = await res.json();
-      if (data.result === true) return true;
-    } catch {}
-  }
-
-  // Fallback: check Optimism directly for Holonym V3 NFT transfers
+  // Use our /api/verify endpoint which has the working Optimism RPC scan
   try {
-    const ethRes = await fetch(
-      `https://api-optimistic.etherscan.io/api?module=account&action=tokennfttx&contractaddress=0xef59aC90646fc09690ed4144741f3A884282ee77&address=${address}&page=1&offset=5&sort=desc`
-    );
-    const ethData = await ethRes.json();
-    if (ethData.result && Array.isArray(ethData.result) && ethData.result.length > 0) {
-      return true;
-    }
-  } catch {}
-
-  return false;
+    const res = await fetch(`/api/verify?address=${address}`);
+    const data = await res.json();
+    return data.verified === true;
+  } catch {
+    // If API fails, trust the stored verification state
+    return false;
+  }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -67,11 +50,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+        // Restore saved state including verification status
         setState((prev) => ({ ...prev, ...parsed, isLoading: false }));
-        // Re-verify in background
-        if (parsed.address) {
+        // Re-verify in background — only UPGRADE from false to true, never downgrade
+        if (parsed.address && !parsed.isVerified) {
           checkHolonymSBT(parsed.address).then((verified) => {
-            setState((prev) => ({ ...prev, isVerified: verified }));
+            if (verified) {
+              setState((prev) => {
+                const newState = { ...prev, isVerified: true };
+                localStorage.setItem("sentinel-auth", JSON.stringify(newState));
+                return newState;
+              });
+            }
           });
         }
       } catch {}
