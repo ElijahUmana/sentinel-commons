@@ -1,0 +1,12 @@
+{
+  "name": "Sentinel Community Coordinator",
+  "description": "Autonomous community coordination agent for Frontier Tower. Manages treasury LP positions on Meteora, coordinates resources across floors, and responds to community queries. Continuously monitored by Safety Sentinel agent.",
+  "image": "",
+  "external_url": "https://github.com/elijah-ship-it/sentinel-commons",
+  "attributes": [
+    {"trait_type": "Role", "value": "Community Coordinator"},
+    {"trait_type": "Building", "value": "Frontier Tower"},
+    {"trait_type": "Safety Monitored", "value": "Yes"},
+    {"trait_type": "Governance", "value": "Holonym SBT Verified Humans Only"}
+  ]
+}

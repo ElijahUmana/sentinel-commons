@@ -42,3 +42,7 @@ next-env.d.ts
 .env.local
 .env.local
 .solana-wallet.json
+.venv
+.solana-wallet.json
+.store.json
+.metaplex-registration.json
