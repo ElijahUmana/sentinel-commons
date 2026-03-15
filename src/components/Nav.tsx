@@ -5,8 +5,11 @@ import { ConnectWallet } from "@/components/ConnectWallet";
 import { usePathname } from "next/navigation";
 
 export function Nav() {
-  const { address } = useAuth();
+  const { address, floor, role } = useAuth();
   const pathname = usePathname();
+
+  // Only show nav links when fully onboarded (address + floor + role)
+  const fullyOnboarded = address && floor && role;
 
   return (
     <nav className="border-b border-gray-800 bg-gray-950/80 backdrop-blur-sm sticky top-0 z-50">
@@ -24,12 +27,15 @@ export function Nav() {
           </a>
 
           <div className="flex items-center gap-4">
-            {address && (
+            {fullyOnboarded && (
               <>
                 <NavLink href="/" label="Home" active={pathname === "/"} />
                 <NavLink href="/chat" label="Chat" active={pathname === "/chat"} />
                 <NavLink href="/governance" label="Governance" active={pathname === "/governance"} />
-                <NavLink href="/audit" label="Audit Trail" active={pathname === "/audit"} />
+                {/* Audit Trail only for floor leads */}
+                {role === "lead" && (
+                  <NavLink href="/audit" label="Audit Trail" active={pathname === "/audit"} />
+                )}
                 <div className="w-px h-5 bg-gray-800" />
               </>
             )}

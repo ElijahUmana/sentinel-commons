@@ -442,7 +442,30 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <div className="text-[10px] text-gray-600 mt-2">Managed by AI agent · All expenses require governance approval · Audit trail on Solana + Bittensor</div>
+          <div className="mt-3 p-3 rounded-lg bg-emerald-400/5 border border-emerald-400/20 text-[10px]">
+            <div className="font-medium text-emerald-400 mb-1">Treasury Location</div>
+            <div className="text-gray-400">
+              Funds held in Solana wallet <span className="font-mono text-gray-500">672Ffw...XDpT</span> ·
+              Yield earned via Meteora DLMM LP positions ·
+              All expenses require governance vote ·
+              Escrow payments via Arkhai on Base Sepolia ·
+              Every transaction signed in Lit Protocol TEE and stored on Bittensor
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Member: floor budget summary (compact, read-only) */}
+      {role === "member" && budget && (
+        <div className="glass rounded-xl p-4 mb-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 text-xs">
+              <div><span className="text-gray-500">Floor Budget:</span> <span className="font-medium">${budget.total.toLocaleString()}</span></div>
+              <div><span className="text-gray-500">Remaining:</span> <span className="font-medium text-emerald-400">${budget.remaining.toLocaleString()}</span></div>
+              <div><span className="text-gray-500">Spent:</span> <span className="font-medium">${budget.spent.toLocaleString()}</span></div>
+            </div>
+            <span className="text-[10px] text-gray-600">Managed by AI agent · Governed by floor leads</span>
+          </div>
         </div>
       )}
 
