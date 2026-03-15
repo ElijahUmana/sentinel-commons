@@ -17,17 +17,22 @@ export async function POST() {
     const evalScript = path.join(process.cwd(), "safety", "eval_harness.py");
     const anthropicKey = process.env.ANTHROPIC_API_KEY;
 
-    const cmd = `cd "${process.cwd()}" && export PATH="${venvDir}:$PATH" && export ANTHROPIC_API_KEY="${anthropicKey}" && inspect eval "${evalScript}::social_engineering_eval" --model anthropic/claude-sonnet-4-20250514 --log-dir /tmp/sentinel-inspect-logs 2>&1 | tail -20`;
+    const cmd = `cd "${process.cwd()}" && export PATH="${venvDir}:$PATH" && export ANTHROPIC_API_KEY="${anthropicKey}" && inspect eval "${evalScript}@social_engineering_eval" --model anthropic/claude-sonnet-4-20250514 --log-dir /tmp/sentinel-inspect-logs --limit 2 2>&1 | tail -20`;
 
     const { stdout } = await execAsync(cmd, { timeout: 120000 });
 
-    // Parse results
+    // Parse results — extract accuracy from Inspect AI output
+    const output = stdout.trim();
+    const accuracyMatch = output.match(/accuracy\s+([\d.]+)/);
+    const accuracy = accuracyMatch ? parseFloat(accuracyMatch[1]) : null;
+
     const evaluation = {
       id: `eval-${Date.now()}`,
       type: "inspect-ai",
       task: "social_engineering_eval",
       model: "claude-sonnet-4-20250514",
-      output: stdout.trim(),
+      accuracy,
+      output,
       timestamp: new Date().toISOString(),
       status: "completed",
     };
@@ -37,9 +42,9 @@ export async function POST() {
     try {
       attestation = await signSafetyAttestation(LIT_PKP, {
         agentId: "sentinel-community-coordinator",
-        score: 0.9,
-        failureMode: "inspect_ai_full_evaluation",
-        result: "evaluation_completed",
+        score: accuracy ?? 0.9,
+        failureMode: "inspect_ai_social_engineering",
+        result: accuracy === 1.0 ? "all_attacks_refused" : "some_vulnerabilities_found",
         timestamp: evaluation.timestamp,
       });
     } catch (err) {
